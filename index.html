@@ -1,0 +1,3071 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <!--
+  西部牛仔「掏枪反应对决」Split-screen Duel（单文件可直接部署到 GitHub Pages）
+  -------------------------------------------------------------------------
+  怎么玩：
+  1) 手机/平板（触屏）：
+     - 屏幕左半边 = Player A，右半边 = Player B（可在设置里开启 A/B 交换）
+     - 点击“下一局”进入准备 → 随机等待 1.5~4.5s → 出现 “DRAW / FIRE” 信号后立刻点击自己的区域
+     - 信号出现前点了 = 抢跑判负（本局直接结束）
+  2) 电脑（键盘/鼠标）：
+     - Player A：Space（空格）
+     - Player B：Enter（回车）
+     - 鼠标也可点击左右区域
+     - 已处理 key repeat：按住不会重复触发
+  规则（严格状态机）：IDLE -> ARMED -> WAITING -> DRAW -> RESULT（每局只判定一次，后续输入全部忽略）
+
+  GitHub Pages 部署步骤：
+  1) 新建 GitHub 仓库，把本文件保存为仓库根目录的 index.html，commit 并 push 到 main 分支
+  2) 仓库 Settings → Pages → Build and deployment：
+     - Source 选择 “Deploy from a branch”
+     - Branch 选择 “main”，Folder 选择 “/ (root)”
+  3) 保存后，打开 GitHub 给你的 Pages 链接即可运行
+  -------------------------------------------------------------------------
+  -->
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>Split-screen Duel • Quickdraw</title>
+    <style>
+      :root {
+        --bg0: #0b0b10;
+        --bg1: #120f18;
+        --sand0: #6b4b2a;
+        --sand1: #d6b07c;
+        --sand2: #f2d3a2;
+        --ink: #101018;
+        --text: #f6efe2;
+        --muted: rgba(246, 239, 226, 0.72);
+        --muted2: rgba(246, 239, 226, 0.45);
+
+        --A: #46d7ff;
+        --B: #ff4f87;
+        --good: #66f0a8;
+        --bad: #ff5c5c;
+        --warn: #ffd166;
+
+        --glass: rgba(18, 14, 24, 0.55);
+        --glass2: rgba(255, 255, 255, 0.06);
+        --stroke: rgba(255, 255, 255, 0.12);
+
+        --shadow: 0 18px 45px rgba(0, 0, 0, 0.45);
+        --shadow2: 0 10px 26px rgba(0, 0, 0, 0.38);
+
+        --radius: 22px;
+        --radius2: 16px;
+
+        --safe-top: env(safe-area-inset-top, 0px);
+        --safe-bottom: env(safe-area-inset-bottom, 0px);
+        --safe-left: env(safe-area-inset-left, 0px);
+        --safe-right: env(safe-area-inset-right, 0px);
+
+        --shake: 0px;
+        --shakeR: 0deg;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        background: #05050a;
+        color: var(--text);
+        font-family:
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          Segoe UI,
+          Roboto,
+          Helvetica,
+          Arial,
+          "Apple Color Emoji",
+          "Segoe UI Emoji";
+      }
+      body {
+        overflow: hidden;
+      }
+
+      .app {
+        position: relative;
+        height: 100%;
+        width: 100%;
+        padding: calc(10px + var(--safe-top)) calc(10px + var(--safe-right))
+          calc(10px + var(--safe-bottom)) calc(10px + var(--safe-left));
+        background:
+          radial-gradient(
+            1200px 900px at 50% 30%,
+            rgba(255, 210, 150, 0.1),
+            transparent 60%
+          ),
+          radial-gradient(
+            900px 700px at 20% 80%,
+            rgba(80, 200, 255, 0.07),
+            transparent 55%
+          ),
+          radial-gradient(
+            900px 700px at 80% 85%,
+            rgba(255, 80, 160, 0.08),
+            transparent 55%
+          ),
+          linear-gradient(180deg, #05050b 0%, #090815 30%, #05050a 100%);
+        transform: translate3d(var(--shake), 0, 0) rotate(var(--shakeR));
+        transform-origin: center;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      /* Cinematic background layers */
+      .bg {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+        border-radius: 26px;
+        filter: saturate(1.08) contrast(1.05);
+      }
+      .bg::before {
+        content: "";
+        position: absolute;
+        inset: -25%;
+        background:
+          radial-gradient(
+            1100px 720px at 50% 40%,
+            rgba(245, 210, 155, 0.18),
+            transparent 65%
+          ),
+          radial-gradient(
+            900px 550px at 25% 70%,
+            rgba(255, 120, 90, 0.1),
+            transparent 60%
+          ),
+          radial-gradient(
+            900px 550px at 75% 68%,
+            rgba(90, 160, 255, 0.09),
+            transparent 60%
+          ),
+          linear-gradient(
+            180deg,
+            rgba(12, 10, 18, 0.2) 0%,
+            rgba(12, 10, 18, 0.75) 70%,
+            rgba(10, 8, 14, 1) 100%
+          );
+        transform: translate3d(0, 0, 0);
+        animation: cameraDrift 7.8s ease-in-out infinite alternate;
+      }
+      .bg::after {
+        /* dunes + wind */
+        content: "";
+        position: absolute;
+        inset: -12%;
+        background:
+          radial-gradient(
+            800px 320px at 20% 85%,
+            rgba(215, 170, 110, 0.22),
+            transparent 68%
+          ),
+          radial-gradient(
+            950px 360px at 80% 90%,
+            rgba(215, 170, 110, 0.2),
+            transparent 70%
+          ),
+          radial-gradient(
+            1200px 520px at 50% 115%,
+            rgba(225, 185, 120, 0.25),
+            transparent 68%
+          ),
+          repeating-linear-gradient(
+            12deg,
+            rgba(255, 255, 255, 0) 0px,
+            rgba(255, 255, 255, 0) 9px,
+            rgba(255, 255, 255, 0.03) 10px,
+            rgba(255, 255, 255, 0) 18px
+          );
+        filter: blur(0.2px);
+        mix-blend-mode: overlay;
+        opacity: 0.7;
+        animation: wind 3.9s linear infinite;
+      }
+
+      @keyframes cameraDrift {
+        0% {
+          transform: translate3d(-10px, -7px, 0) scale(1.02) rotate(-0.2deg);
+        }
+        100% {
+          transform: translate3d(10px, 7px, 0) scale(1.04) rotate(0.2deg);
+        }
+      }
+      @keyframes wind {
+        0% {
+          transform: translate3d(-2%, 0, 0);
+          opacity: 0.62;
+        }
+        50% {
+          opacity: 0.75;
+        }
+        100% {
+          transform: translate3d(2%, 0, 0);
+          opacity: 0.62;
+        }
+      }
+
+      /* Film grain / vignette / scanlines */
+      .film {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        border-radius: 26px;
+      }
+      .film::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          1200px 900px at 50% 38%,
+          rgba(0, 0, 0, 0.08),
+          rgba(0, 0, 0, 0.55) 70%,
+          rgba(0, 0, 0, 0.76) 100%
+        );
+        opacity: 0.9;
+      }
+      .film::after {
+        content: "";
+        position: absolute;
+        inset: -10%;
+        background:
+          repeating-linear-gradient(
+            0deg,
+            rgba(255, 255, 255, 0) 0px,
+            rgba(255, 255, 255, 0) 2px,
+            rgba(255, 255, 255, 0.015) 3px,
+            rgba(255, 255, 255, 0) 6px
+          ),
+          radial-gradient(
+            circle at 30% 20%,
+            rgba(255, 255, 255, 0.03),
+            transparent 40%
+          ),
+          radial-gradient(
+            circle at 70% 80%,
+            rgba(255, 255, 255, 0.02),
+            transparent 45%
+          );
+        opacity: 0.55;
+        mix-blend-mode: overlay;
+        animation: grain 1.6s steps(2) infinite;
+        filter: contrast(120%) brightness(105%);
+      }
+      @keyframes grain {
+        0% {
+          transform: translate3d(-2%, -2%, 0);
+        }
+        25% {
+          transform: translate3d(2%, -1%, 0);
+        }
+        50% {
+          transform: translate3d(-1%, 2%, 0);
+        }
+        75% {
+          transform: translate3d(1%, 1%, 0);
+        }
+        100% {
+          transform: translate3d(-2%, 0, 0);
+        }
+      }
+
+      canvas#fx {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        border-radius: 26px;
+      }
+
+      .hud {
+        position: relative;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        z-index: 2;
+      }
+
+      .topbar {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: var(--radius);
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.06),
+          rgba(255, 255, 255, 0.03)
+        );
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: var(--shadow2);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        overflow: hidden;
+      }
+
+      .tag {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+      }
+      .tag .badge {
+        width: 38px;
+        height: 38px;
+        border-radius: 14px;
+        display: grid;
+        place-items: center;
+        font-weight: 900;
+        letter-spacing: 0.5px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: radial-gradient(
+          circle at 30% 25%,
+          rgba(255, 255, 255, 0.18),
+          rgba(255, 255, 255, 0.06)
+        );
+        box-shadow: 0 10px 26px rgba(0, 0, 0, 0.32);
+      }
+      .tag .nameWrap {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .tag .name {
+        font-weight: 800;
+        letter-spacing: 0.6px;
+        text-transform: uppercase;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+        font-size: 12px;
+        opacity: 0.92;
+      }
+      .tag .sub {
+        font-size: 11px;
+        color: var(--muted2);
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+      }
+
+      .tag.left .badge {
+        color: #00131a;
+        background: radial-gradient(
+          circle at 30% 25%,
+          rgba(255, 255, 255, 0.3),
+          rgba(70, 215, 255, 0.24)
+        );
+        border-color: rgba(70, 215, 255, 0.35);
+      }
+      .tag.right {
+        justify-content: flex-end;
+        text-align: right;
+      }
+      .tag.right .badge {
+        color: #1a0010;
+        background: radial-gradient(
+          circle at 30% 25%,
+          rgba(255, 255, 255, 0.3),
+          rgba(255, 79, 135, 0.22)
+        );
+        border-color: rgba(255, 79, 135, 0.32);
+      }
+
+      .scoreboard {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        padding: 6px 14px;
+        border-radius: 18px;
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+        position: relative;
+        overflow: hidden;
+      }
+      .scoreline {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        font-weight: 900;
+        letter-spacing: 1px;
+        text-shadow: 0 10px 28px rgba(0, 0, 0, 0.55);
+      }
+      .scoreA,
+      .scoreB {
+        font-size: 26px;
+        line-height: 1;
+        transition:
+          transform 0.18s cubic-bezier(0.2, 0.9, 0.2, 1),
+          filter 0.18s;
+      }
+      .scoreA.bump,
+      .scoreB.bump {
+        transform: translateY(-2px) scale(1.12);
+        filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.4));
+      }
+      .scoreA {
+        color: rgba(70, 215, 255, 0.95);
+      }
+      .scoreB {
+        color: rgba(255, 79, 135, 0.95);
+      }
+      .vs {
+        font-size: 13px;
+        color: rgba(246, 239, 226, 0.62);
+        font-weight: 800;
+        letter-spacing: 2px;
+        transform: translateY(-2px);
+      }
+      .target {
+        font-size: 11px;
+        color: var(--muted);
+        letter-spacing: 2px;
+        text-transform: uppercase;
+      }
+
+      .arena {
+        flex: 1;
+        min-height: 260px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        position: relative;
+      }
+
+      .zone {
+        position: relative;
+        border-radius: var(--radius);
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background:
+          radial-gradient(
+            700px 420px at 50% 40%,
+            rgba(255, 255, 255, 0.06),
+            rgba(0, 0, 0, 0.18) 60%,
+            rgba(0, 0, 0, 0.34) 100%
+          ),
+          linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.1));
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        box-shadow: var(--shadow);
+        touch-action: none;
+        cursor: pointer;
+        transform: translateZ(0);
+      }
+      .zone::before {
+        /* edge highlight + breathing glow */
+        content: "";
+        position: absolute;
+        inset: -1px;
+        border-radius: var(--radius);
+        background:
+          radial-gradient(
+            650px 320px at 50% 0%,
+            rgba(255, 255, 255, 0.1),
+            transparent 60%
+          ),
+          radial-gradient(
+            500px 360px at 50% 100%,
+            rgba(0, 0, 0, 0.24),
+            transparent 55%
+          );
+        opacity: 0.9;
+        pointer-events: none;
+      }
+      .zone::after {
+        content: "";
+        position: absolute;
+        inset: -20%;
+        background:
+          radial-gradient(
+            400px 200px at 40% 25%,
+            rgba(255, 255, 255, 0.08),
+            transparent 60%
+          ),
+          radial-gradient(
+            420px 240px at 60% 65%,
+            rgba(255, 255, 255, 0.06),
+            transparent 62%
+          );
+        opacity: 0.35;
+        mix-blend-mode: overlay;
+        pointer-events: none;
+        animation: breathe 3.4s ease-in-out infinite;
+        transform: translateZ(0);
+        filter: blur(0.3px);
+      }
+      @keyframes breathe {
+        0% {
+          transform: translate3d(-2%, -1%, 0) scale(1.02);
+          opacity: 0.26;
+        }
+        50% {
+          transform: translate3d(2%, 1%, 0) scale(1.06);
+          opacity: 0.42;
+        }
+        100% {
+          transform: translate3d(-2%, -1%, 0) scale(1.02);
+          opacity: 0.26;
+        }
+      }
+
+      .zone.isPressed {
+        transform: scale(0.992);
+        filter: brightness(1.06);
+      }
+      .zone.locked {
+        cursor: default;
+      }
+
+      .zone.left {
+        --accent: var(--A);
+      }
+      .zone.right {
+        --accent: var(--B);
+      }
+
+      .zone .top {
+        position: absolute;
+        left: 14px;
+        right: 14px;
+        top: 14px;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 10px;
+        pointer-events: none;
+      }
+      .pLabel {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 0;
+      }
+      .pLabel .p {
+        font-weight: 900;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        font-size: 12px;
+        opacity: 0.85;
+      }
+      .pLabel .n {
+        font-weight: 900;
+        letter-spacing: 0.8px;
+        font-size: 14px;
+        text-transform: uppercase;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+        filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.35));
+      }
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 10px;
+        border-radius: 999px;
+        background: rgba(0, 0, 0, 0.26);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        font-size: 11px;
+        color: var(--muted);
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 99px;
+        background: var(--accent);
+        box-shadow:
+          0 0 0 6px rgba(255, 255, 255, 0.04),
+          0 0 22px rgba(255, 255, 255, 0.06),
+          0 0 22px color-mix(in srgb, var(--accent) 50%, transparent);
+        opacity: 0.95;
+        animation: pulseDot 1.6s ease-in-out infinite;
+      }
+      @keyframes pulseDot {
+        0%,
+        100% {
+          transform: scale(0.9);
+          opacity: 0.8;
+        }
+        50% {
+          transform: scale(1.08);
+          opacity: 1;
+        }
+      }
+
+      .zone .mid {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        pointer-events: none;
+        padding: 70px 16px 62px;
+        text-align: center;
+      }
+
+      .bigHint {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        align-items: center;
+        justify-content: center;
+      }
+      .bigHint .key {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.13);
+        background: rgba(0, 0, 0, 0.22);
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        font-weight: 900;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        font-size: 12px;
+        color: rgba(246, 239, 226, 0.88);
+      }
+      .kbd {
+        padding: 5px 8px;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        background: radial-gradient(
+          circle at 30% 25%,
+          rgba(255, 255, 255, 0.14),
+          rgba(255, 255, 255, 0.06)
+        );
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.35);
+        font-size: 11px;
+        letter-spacing: 1.2px;
+      }
+      .bigHint .sub {
+        font-size: 12px;
+        color: var(--muted);
+        max-width: 320px;
+        line-height: 1.25;
+      }
+
+      /* Cowboy silhouettes (inline SVG containers) */
+      .silhouette {
+        position: absolute;
+        bottom: -6px;
+        width: min(230px, 70%);
+        height: min(260px, 64%);
+        opacity: 0.78;
+        filter: drop-shadow(0 20px 36px rgba(0, 0, 0, 0.45));
+        transition:
+          transform 0.55s cubic-bezier(0.18, 0.9, 0.18, 1),
+          opacity 0.45s ease,
+          filter 0.45s ease;
+        pointer-events: none;
+      }
+      .zone.left .silhouette {
+        left: 8%;
+        transform: translate3d(0, 0, 0) rotate(-2deg);
+      }
+      .zone.right .silhouette {
+        right: 8%;
+        transform: translate3d(0, 0, 0) rotate(2deg) scaleX(-1);
+      }
+      .silhouette svg {
+        width: 100%;
+        height: 100%;
+      }
+      .silhouette .fill {
+        fill: rgba(0, 0, 0, 0.6);
+        stroke: rgba(255, 255, 255, 0.06);
+        stroke-width: 1.5;
+      }
+
+      /* Winner / Loser states */
+      .zone.win {
+        outline: 1px solid
+          color-mix(in srgb, var(--accent) 55%, rgba(255, 255, 255, 0.1));
+        box-shadow:
+          0 22px 60px rgba(0, 0, 0, 0.45),
+          0 0 0 1px rgba(255, 255, 255, 0.06) inset,
+          0 0 46px color-mix(in srgb, var(--accent) 25%, transparent);
+        filter: brightness(1.08) saturate(1.12);
+      }
+      .zone.win::after {
+        opacity: 0.62;
+      }
+      .zone.win .silhouette {
+        opacity: 0.92;
+        transform: translate3d(0, -10px, 0) rotate(-1deg) scale(1.02);
+        filter: drop-shadow(0 28px 44px rgba(0, 0, 0, 0.55));
+      }
+
+      .zone.lose {
+        filter: brightness(0.7) saturate(0.88);
+      }
+      .zone.lose .silhouette {
+        opacity: 0.55;
+        transform: translate3d(0, 28px, 0) rotate(-10deg) scale(0.98);
+      }
+      .zone.lose::before {
+        /* cracks */
+        background:
+          radial-gradient(
+            650px 320px at 50% 0%,
+            rgba(255, 255, 255, 0.06),
+            transparent 60%
+          ),
+          radial-gradient(
+            500px 360px at 50% 100%,
+            rgba(0, 0, 0, 0.24),
+            transparent 55%
+          ),
+          conic-gradient(
+            from 180deg at 50% 55%,
+            rgba(255, 255, 255, 0) 0deg,
+            rgba(255, 255, 255, 0.08) 18deg,
+            rgba(255, 255, 255, 0) 28deg,
+            rgba(255, 255, 255, 0.07) 64deg,
+            rgba(255, 255, 255, 0) 80deg,
+            rgba(255, 255, 255, 0.05) 120deg,
+            rgba(255, 255, 255, 0) 140deg,
+            rgba(255, 255, 255, 0.08) 188deg,
+            rgba(255, 255, 255, 0) 210deg,
+            rgba(255, 255, 255, 0.06) 248deg,
+            rgba(255, 255, 255, 0) 276deg,
+            rgba(255, 255, 255, 0.07) 316deg,
+            rgba(255, 255, 255, 0) 360deg
+          );
+        opacity: 0.9;
+        mix-blend-mode: overlay;
+      }
+
+      /* Center prompt */
+      .center {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: min(520px, 86%);
+        pointer-events: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        z-index: 5;
+      }
+      .banner {
+        position: relative;
+        padding: 14px 18px;
+        border-radius: 999px;
+        background: rgba(0, 0, 0, 0.32);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow:
+          0 24px 64px rgba(0, 0, 0, 0.52),
+          inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        overflow: hidden;
+      }
+      .banner::before {
+        content: "";
+        position: absolute;
+        inset: -40%;
+        background:
+          radial-gradient(
+            500px 260px at 35% 30%,
+            rgba(255, 255, 255, 0.12),
+            transparent 60%
+          ),
+          radial-gradient(
+            520px 260px at 60% 70%,
+            rgba(255, 255, 255, 0.09),
+            transparent 62%
+          );
+        opacity: 0.7;
+        animation: breathe 3.8s ease-in-out infinite;
+        pointer-events: none;
+      }
+      .stateText {
+        position: relative;
+        font-weight: 1000;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        font-size: clamp(18px, 4vw, 30px);
+        text-shadow:
+          0 16px 40px rgba(0, 0, 0, 0.55),
+          0 2px 0 rgba(0, 0, 0, 0.28);
+        filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.45));
+      }
+      .stateSub {
+        font-size: 12px;
+        color: var(--muted);
+        letter-spacing: 1.2px;
+        text-align: center;
+        line-height: 1.25;
+        max-width: 520px;
+      }
+
+      .drawBurst {
+        position: absolute;
+        inset: -20%;
+        pointer-events: none;
+        background:
+          radial-gradient(
+            circle at 50% 50%,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 255, 255, 0.05) 35%,
+            rgba(255, 255, 255, 0) 60%
+          ),
+          radial-gradient(
+            circle at 50% 50%,
+            rgba(255, 220, 160, 0) 0%,
+            rgba(255, 220, 160, 0.06) 35%,
+            rgba(255, 220, 160, 0) 65%
+          );
+        opacity: 0;
+        transform: scale(0.98);
+        filter: blur(0.2px);
+        z-index: 4;
+      }
+      .drawBurst.on {
+        animation: burst 0.55s ease-out forwards;
+      }
+      @keyframes burst {
+        0% {
+          opacity: 0;
+          transform: scale(0.92);
+        }
+        10% {
+          opacity: 1;
+        }
+        60% {
+          opacity: 0.85;
+          transform: scale(1.02);
+        }
+        100% {
+          opacity: 0;
+          transform: scale(1.06);
+        }
+      }
+
+      /* Flash white overlay */
+      .flash {
+        position: absolute;
+        inset: 0;
+        background: rgba(255, 255, 255, 1);
+        opacity: 0;
+        pointer-events: none;
+        z-index: 6;
+      }
+      .flash.on {
+        animation: flash 320ms ease-out forwards;
+      }
+      @keyframes flash {
+        0% {
+          opacity: 0;
+        }
+        12% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0;
+        }
+      }
+
+      /* Controls + History */
+      .bottom {
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        gap: 10px;
+        align-items: stretch;
+        min-height: 170px;
+      }
+
+      .panel {
+        border-radius: var(--radius);
+        background: rgba(0, 0, 0, 0.22);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: var(--shadow2);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        overflow: hidden;
+      }
+
+      .controls {
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .btns {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      button {
+        appearance: none;
+        border: none;
+        color: rgba(246, 239, 226, 0.92);
+        background:
+          radial-gradient(
+            circle at 20% 25%,
+            rgba(255, 255, 255, 0.16),
+            rgba(255, 255, 255, 0.06)
+          ),
+          linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.06),
+            rgba(255, 255, 255, 0.02)
+          );
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 16px;
+        padding: 10px 12px;
+        font-weight: 900;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        font-size: 12px;
+        box-shadow:
+          0 14px 30px rgba(0, 0, 0, 0.35),
+          inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        transform: translateZ(0);
+      }
+      button:hover {
+        filter: brightness(1.06);
+      }
+      button:active {
+        transform: translateY(1px) scale(0.995);
+        filter: brightness(1.08);
+      }
+      button.primary {
+        border-color: rgba(255, 209, 140, 0.25);
+        background:
+          radial-gradient(
+            circle at 20% 25%,
+            rgba(255, 255, 255, 0.22),
+            rgba(255, 209, 140, 0.08)
+          ),
+          linear-gradient(
+            180deg,
+            rgba(255, 209, 140, 0.1),
+            rgba(255, 255, 255, 0.02)
+          );
+      }
+      button.danger {
+        border-color: rgba(255, 92, 92, 0.28);
+        background:
+          radial-gradient(
+            circle at 20% 25%,
+            rgba(255, 255, 255, 0.2),
+            rgba(255, 92, 92, 0.07)
+          ),
+          linear-gradient(
+            180deg,
+            rgba(255, 92, 92, 0.1),
+            rgba(255, 255, 255, 0.02)
+          );
+      }
+      button.ghost {
+        background: rgba(0, 0, 0, 0.16);
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+      }
+      button[disabled] {
+        opacity: 0.5;
+        cursor: not-allowed;
+        filter: grayscale(0.2);
+      }
+
+      .meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 8px 12px;
+        border-radius: 16px;
+        background: rgba(0, 0, 0, 0.18);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .meta .k {
+        font-size: 11px;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+        color: var(--muted2);
+      }
+      .meta .v {
+        font-weight: 900;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .history {
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .history h3 {
+        margin: 0;
+        font-size: 12px;
+        letter-spacing: 2.4px;
+        text-transform: uppercase;
+        color: rgba(246, 239, 226, 0.82);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+      .history small {
+        color: var(--muted2);
+        font-weight: 800;
+        letter-spacing: 1px;
+      }
+      .list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        overflow: auto;
+        padding-right: 4px;
+        flex: 1;
+        max-height: 140px;
+      }
+      .item {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 10px;
+        align-items: center;
+        padding: 10px 10px;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(0, 0, 0, 0.16);
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+      }
+      .chip {
+        width: 36px;
+        height: 36px;
+        border-radius: 14px;
+        display: grid;
+        place-items: center;
+        font-weight: 1000;
+        letter-spacing: 0.5px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: radial-gradient(
+          circle at 30% 25%,
+          rgba(255, 255, 255, 0.16),
+          rgba(255, 255, 255, 0.06)
+        );
+      }
+      .chip.A {
+        color: #00131a;
+        border-color: rgba(70, 215, 255, 0.32);
+        background: radial-gradient(
+          circle at 30% 25%,
+          rgba(255, 255, 255, 0.26),
+          rgba(70, 215, 255, 0.18)
+        );
+      }
+      .chip.B {
+        color: #1a0010;
+        border-color: rgba(255, 79, 135, 0.28);
+        background: radial-gradient(
+          circle at 30% 25%,
+          rgba(255, 255, 255, 0.24),
+          rgba(255, 79, 135, 0.16)
+        );
+      }
+      .chip.X {
+        color: rgba(255, 255, 255, 0.78);
+        border-color: rgba(255, 255, 255, 0.16);
+      }
+      .desc {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+      }
+      .desc .t {
+        font-weight: 950;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        font-size: 12px;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+      }
+      .desc .s {
+        font-size: 11px;
+        color: var(--muted);
+        letter-spacing: 0.4px;
+        line-height: 1.2;
+      }
+
+      /* Ripple */
+      .ripple {
+        position: absolute;
+        border-radius: 999px;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        background: radial-gradient(
+          circle,
+          rgba(255, 255, 255, 0.42),
+          rgba(255, 255, 255, 0.18) 30%,
+          rgba(255, 255, 255, 0) 70%
+        );
+        width: 18px;
+        height: 18px;
+        animation: ripple 0.55s ease-out forwards;
+        mix-blend-mode: overlay;
+        filter: blur(0.15px);
+      }
+      @keyframes ripple {
+        0% {
+          opacity: 0;
+          transform: translate(-50%, -50%) scale(0.8);
+        }
+        10% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0;
+          transform: translate(-50%, -50%) scale(18);
+        }
+      }
+
+      /* Pause overlay */
+      .overlay {
+        position: absolute;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 50;
+        border-radius: 26px;
+        background: rgba(0, 0, 0, 0.35);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+      }
+      .overlay.on {
+        display: flex;
+      }
+      .overlay .card {
+        width: min(520px, 88%);
+        border-radius: var(--radius);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(0, 0, 0, 0.32);
+        box-shadow: 0 30px 90px rgba(0, 0, 0, 0.6);
+        padding: 18px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        text-align: center;
+      }
+      .overlay .card .h {
+        font-weight: 1000;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        font-size: 24px;
+        text-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+      }
+      .overlay .card .p {
+        color: var(--muted);
+        font-size: 12px;
+        letter-spacing: 1px;
+        line-height: 1.25;
+      }
+
+      /* Settings modal */
+      .modal {
+        position: absolute;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 60;
+        border-radius: 26px;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        padding: 12px;
+      }
+      .modal.on {
+        display: flex;
+      }
+      .modal .sheet {
+        width: min(720px, 94%);
+        max-height: min(80vh, 760px);
+        overflow: auto;
+        border-radius: var(--radius);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background:
+          radial-gradient(
+            circle at 20% 15%,
+            rgba(255, 255, 255, 0.1),
+            transparent 55%
+          ),
+          rgba(0, 0, 0, 0.44);
+        box-shadow: 0 40px 120px rgba(0, 0, 0, 0.7);
+        padding: 16px;
+      }
+      .sheet h2 {
+        margin: 0 0 8px;
+        font-weight: 1000;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        font-size: 18px;
+      }
+      .sheet .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 12px;
+      }
+      .field {
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(0, 0, 0, 0.18);
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .field label {
+        font-size: 11px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--muted2);
+        font-weight: 900;
+      }
+      .field input[type="text"],
+      .field select {
+        width: 100%;
+        padding: 10px 10px;
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: rgba(255, 255, 255, 0.06);
+        color: rgba(246, 239, 226, 0.92);
+        outline: none;
+        font-weight: 900;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+      }
+      .field input[type="range"] {
+        width: 100%;
+      }
+      .tog {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        justify-content: space-between;
+      }
+      .switch {
+        width: 46px;
+        height: 26px;
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 999px;
+        position: relative;
+        cursor: pointer;
+        flex: 0 0 auto;
+      }
+      .switch::after {
+        content: "";
+        width: 20px;
+        height: 20px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.8);
+        position: absolute;
+        top: 2px;
+        left: 3px;
+        transition: transform 0.2s cubic-bezier(0.2, 0.9, 0.2, 1);
+        box-shadow: 0 10px 22px rgba(0, 0, 0, 0.35);
+      }
+      .switch.on {
+        background: rgba(255, 209, 140, 0.18);
+        border-color: rgba(255, 209, 140, 0.28);
+      }
+      .switch.on::after {
+        transform: translateX(19px);
+      }
+      .sheet .actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 12px;
+        flex-wrap: wrap;
+      }
+
+      /* Shake */
+      .shake {
+        animation: shake 0.45s cubic-bezier(0.2, 0.9, 0.2, 1);
+      }
+      @keyframes shake {
+        0% {
+          transform: translate3d(0, 0, 0);
+        }
+        10% {
+          transform: translate3d(-3px, 1px, 0) rotate(-0.2deg);
+        }
+        20% {
+          transform: translate3d(3px, -1px, 0) rotate(0.2deg);
+        }
+        30% {
+          transform: translate3d(-4px, 2px, 0) rotate(-0.25deg);
+        }
+        40% {
+          transform: translate3d(4px, -2px, 0) rotate(0.25deg);
+        }
+        55% {
+          transform: translate3d(-2px, 1px, 0) rotate(-0.15deg);
+        }
+        70% {
+          transform: translate3d(2px, -1px, 0) rotate(0.15deg);
+        }
+        100% {
+          transform: translate3d(0, 0, 0);
+        }
+      }
+
+      /* Responsive bottom layout */
+      @media (max-width: 860px) {
+        .bottom {
+          grid-template-columns: 1fr;
+        }
+        .list {
+          max-height: 130px;
+        }
+      }
+
+      /* Extra compact on very short heights */
+      @media (max-height: 700px) {
+        .bottom {
+          min-height: 150px;
+        }
+        .zone .mid {
+          padding-top: 60px;
+        }
+        .silhouette {
+          opacity: 0.72;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="app" class="app">
+      <div class="bg"></div>
+      <canvas id="fx"></canvas>
+      <div class="film"></div>
+
+      <div class="hud">
+        <header class="topbar">
+          <div class="tag left">
+            <div class="badge" id="badgeA">A</div>
+            <div class="nameWrap">
+              <div class="name" id="nameA">PLAYER A</div>
+              <div class="sub" id="subA">Space / Tap Left</div>
+            </div>
+          </div>
+
+          <div class="scoreboard" aria-label="scoreboard">
+            <div class="scoreline">
+              <div class="scoreA" id="scoreA">0</div>
+              <div class="vs">VS</div>
+              <div class="scoreB" id="scoreB">0</div>
+            </div>
+            <div class="target" id="targetLabel">FIRST TO 5</div>
+          </div>
+
+          <div class="tag right">
+            <div class="nameWrap">
+              <div class="name" id="nameB">PLAYER B</div>
+              <div class="sub" id="subB">Enter / Tap Right</div>
+            </div>
+            <div class="badge" id="badgeB">B</div>
+          </div>
+        </header>
+
+        <main class="arena" id="arena">
+          <div class="drawBurst" id="drawBurst"></div>
+          <div class="flash" id="flash"></div>
+
+          <section class="zone left" id="zoneLeft" aria-label="left zone">
+            <div class="top">
+              <div class="pLabel">
+                <div class="p" id="leftPlayerTag">PLAYER A</div>
+                <div class="n" id="leftPlayerName">PLAYER A</div>
+              </div>
+              <div class="pill">
+                <span class="dot"></span><span id="leftMiniState">IDLE</span>
+              </div>
+            </div>
+
+            <div class="mid">
+              <div class="bigHint">
+                <div class="key">
+                  <span class="kbd" id="leftKeyHint">SPACE</span
+                  ><span id="leftHintText">Tap / Press</span>
+                </div>
+                <div class="sub" id="leftHintSub">
+                  等待信号出现后再出手。抢跑直接判负。
+                </div>
+              </div>
+            </div>
+
+            <div class="silhouette" aria-hidden="true">
+              <!-- Simple cowboy silhouette -->
+              <svg viewBox="0 0 300 360" fill="none">
+                <path
+                  class="fill"
+                  d="M120 40c22-22 60-22 82 0 8 8 14 18 18 28 24 4 42 14 48 26 6 12-2 24-20 34-20 12-48 18-76 18s-56-6-76-18c-18-10-26-22-20-34 6-12 24-22 48-26 4-10 10-20 16-28Zm32 120c30 0 54 22 54 52v46c0 8-6 14-14 14h-10v58c0 10-8 18-18 18h-24c-10 0-18-8-18-18v-58h-10c-8 0-14-6-14-14v-46c0-30 24-52 54-52Zm98 98c10 10 18 26 18 42 0 18-10 34-26 42-12 6-26 6-38 2-10 14-28 22-46 22h-10c12-10 20-26 20-44v-26h14c14 0 24-10 24-24v-18c10 2 20 4 30 4 6 0 10-2 14-6Zm-188-4v18c0 14 10 24 24 24h14v26c0 18 8 34 20 44h-10c-18 0-36-8-46-22-12 4-26 4-38-2-16-8-26-24-26-42 0-16 8-32 18-42 4 4 8 6 14 6 10 0 20-2 30-4Z"
+                />
+              </svg>
+            </div>
+          </section>
+
+          <section class="zone right" id="zoneRight" aria-label="right zone">
+            <div class="top">
+              <div class="pLabel">
+                <div class="p" id="rightPlayerTag">PLAYER B</div>
+                <div class="n" id="rightPlayerName">PLAYER B</div>
+              </div>
+              <div class="pill">
+                <span class="dot"></span><span id="rightMiniState">IDLE</span>
+              </div>
+            </div>
+
+            <div class="mid">
+              <div class="bigHint">
+                <div class="key">
+                  <span class="kbd" id="rightKeyHint">ENTER</span
+                  ><span id="rightHintText">Tap / Press</span>
+                </div>
+                <div class="sub" id="rightHintSub">
+                  听到/看到 “DRAW” 再按。反应越快越好。
+                </div>
+              </div>
+            </div>
+
+            <div class="silhouette" aria-hidden="true">
+              <svg viewBox="0 0 300 360" fill="none">
+                <path
+                  class="fill"
+                  d="M120 40c22-22 60-22 82 0 8 8 14 18 18 28 24 4 42 14 48 26 6 12-2 24-20 34-20 12-48 18-76 18s-56-6-76-18c-18-10-26-22-20-34 6-12 24-22 48-26 4-10 10-20 16-28Zm32 120c30 0 54 22 54 52v46c0 8-6 14-14 14h-10v58c0 10-8 18-18 18h-24c-10 0-18-8-18-18v-58h-10c-8 0-14-6-14-14v-46c0-30 24-52 54-52Zm98 98c10 10 18 26 18 42 0 18-10 34-26 42-12 6-26 6-38 2-10 14-28 22-46 22h-10c12-10 20-26 20-44v-26h14c14 0 24-10 24-24v-18c10 2 20 4 30 4 6 0 10-2 14-6Zm-188-4v18c0 14 10 24 24 24h14v26c0 18 8 34 20 44h-10c-18 0-36-8-46-22-12 4-26 4-38-2-16-8-26-24-26-42 0-16 8-32 18-42 4 4 8 6 14 6 10 0 20-2 30-4Z"
+                />
+              </svg>
+            </div>
+          </section>
+
+          <div class="center" aria-live="polite">
+            <div class="banner">
+              <div class="stateText" id="stateText">IDLE</div>
+            </div>
+            <div class="stateSub" id="stateSub">
+              点击“下一局”进入对峙。信号出现前出手会抢跑判负。
+            </div>
+          </div>
+
+          <div class="overlay" id="pauseOverlay">
+            <div class="card">
+              <div class="h">PAUSED</div>
+              <div class="p">
+                暂停中：计时冻结、输入忽略。点击“继续”或再次点击“暂停”恢复。
+              </div>
+              <div
+                class="btns"
+                style="justify-content: center; margin-top: 10px"
+              >
+                <button class="primary" id="btnResume">继续</button>
+                <button class="ghost" id="btnClosePause">关闭</button>
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="modal"
+            id="settingsModal"
+            role="dialog"
+            aria-modal="true"
+            aria-label="settings"
+          >
+            <div class="sheet">
+              <h2>SETTINGS</h2>
+              <div
+                style="
+                  color: var(--muted);
+                  font-size: 12px;
+                  letter-spacing: 1px;
+                  line-height: 1.25;
+                "
+              >
+                音效用 WebAudio
+                生成（无需外链）。首次播放需要一次用户手势解锁（点击/触摸/按键即可）。
+              </div>
+
+              <div class="grid">
+                <div class="field">
+                  <label>Target Score (先到多少分赢)</label>
+                  <select id="selTarget">
+                    <option value="3">3</option>
+                    <option value="5" selected>5</option>
+                    <option value="10">10</option>
+                  </select>
+                </div>
+
+                <div class="field">
+                  <label>Volume (音量)</label>
+                  <input id="rngVol" type="range" min="0" max="100" step="1" />
+                  <div
+                    style="
+                      display: flex;
+                      justify-content: space-between;
+                      color: var(--muted2);
+                      font-weight: 900;
+                      letter-spacing: 1px;
+                      font-size: 11px;
+                    "
+                  >
+                    <span>0</span><span id="volLabel">70%</span><span>100</span>
+                  </div>
+                </div>
+
+                <div class="field">
+                  <label>Vibration (震动)</label>
+                  <div class="tog">
+                    <div
+                      style="
+                        color: var(--muted);
+                        font-size: 12px;
+                        letter-spacing: 0.6px;
+                        line-height: 1.2;
+                      "
+                    >
+                      手机支持 navigator.vibrate() 时有效（可关）。
+                    </div>
+                    <div
+                      class="switch"
+                      id="swVibe"
+                      aria-label="toggle vibration"
+                    ></div>
+                  </div>
+                </div>
+
+                <div class="field">
+                  <label>Swap Sides (左右手模式 A/B 交换)</label>
+                  <div class="tog">
+                    <div
+                      style="
+                        color: var(--muted);
+                        font-size: 12px;
+                        letter-spacing: 0.6px;
+                        line-height: 1.2;
+                      "
+                    >
+                      交换后：左区/Space/Enter 对应都会对调。
+                    </div>
+                    <div
+                      class="switch"
+                      id="swSwap"
+                      aria-label="toggle swap"
+                    ></div>
+                  </div>
+                </div>
+
+                <div class="field">
+                  <label>Player A Name</label>
+                  <input
+                    id="inpA"
+                    type="text"
+                    maxlength="14"
+                    placeholder="PLAYER A"
+                  />
+                </div>
+
+                <div class="field">
+                  <label>Player B Name</label>
+                  <input
+                    id="inpB"
+                    type="text"
+                    maxlength="14"
+                    placeholder="PLAYER B"
+                  />
+                </div>
+              </div>
+
+              <div class="actions">
+                <button class="ghost" id="btnCloseSettings">取消</button>
+                <button class="primary" id="btnSaveSettings">保存</button>
+              </div>
+            </div>
+          </div>
+        </main>
+
+        <section class="bottom">
+          <div class="panel controls">
+            <div class="row">
+              <div class="btns">
+                <button class="primary" id="btnNext">下一局</button>
+                <button class="ghost" id="btnPause">暂停</button>
+                <button class="danger" id="btnReset">重置比分</button>
+                <button class="ghost" id="btnSettings">设置</button>
+              </div>
+            </div>
+            <div class="row">
+              <div class="meta" style="flex: 1">
+                <div class="k">STATE</div>
+                <div class="v" id="metaState">IDLE</div>
+              </div>
+              <div class="meta" style="flex: 1">
+                <div class="k">ROUND</div>
+                <div class="v" id="metaRound">0</div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="meta" style="flex: 1">
+                <div class="k">LAST</div>
+                <div class="v" id="metaLast">—</div>
+              </div>
+              <div class="meta" style="flex: 1">
+                <div class="k">TIP</div>
+                <div class="v" id="metaTip">WAIT FOR DRAW</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel history">
+            <h3>LAST 10 ROUNDS <small id="histSmall">（本地保存）</small></h3>
+            <div class="list" id="historyList"></div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <script>
+      (() => {
+        "use strict";
+
+        /******************************************************************
+         * Utilities
+         ******************************************************************/
+        const $ = (sel, el = document) => el.querySelector(sel);
+        const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+        const lerp = (a, b, t) => a + (b - a) * t;
+        const fmtMs = (ms) => (ms == null ? "—" : `${ms.toFixed(1)}ms`);
+        const now = () => performance.now();
+        const rand = (a, b) => a + Math.random() * (b - a);
+
+        function addRipple(target, clientX, clientY) {
+          if (!target) return;
+          const r = document.createElement("span");
+          r.className = "ripple";
+          const rect = target.getBoundingClientRect();
+          r.style.left = clientX - rect.left + "px";
+          r.style.top = clientY - rect.top + "px";
+          target.appendChild(r);
+          setTimeout(() => r.remove(), 650);
+        }
+
+        function safeVibrate(pattern) {
+          if (!Game.settings.vibrate) return;
+          if (navigator.vibrate) {
+            try {
+              navigator.vibrate(pattern);
+            } catch (_) {}
+          }
+        }
+
+        /******************************************************************
+         * Audio Engine (WebAudio synthesis: no external files)
+         ******************************************************************/
+        class AudioEngine {
+          constructor() {
+            this.ctx = null;
+            this.master = null;
+            this.noiseBuf = null;
+            this.unlocked = false;
+            this._tensionId = 0;
+          }
+
+          ensure() {
+            if (!this.ctx) {
+              const Ctx = window.AudioContext || window.webkitAudioContext;
+              this.ctx = new Ctx();
+              this.master = this.ctx.createGain();
+              this.master.gain.value = 0.7;
+              this.master.connect(this.ctx.destination);
+              this._buildNoise();
+            }
+            if (this.ctx.state !== "running") {
+              return this.ctx
+                .resume()
+                .then(() => {
+                  this.unlocked = true;
+                })
+                .catch(() => {});
+            }
+            this.unlocked = true;
+            return Promise.resolve();
+          }
+
+          setVolume(v01) {
+            if (!this.master) return;
+            this.master.gain.setTargetAtTime(
+              clamp(v01, 0, 1),
+              this.ctx.currentTime,
+              0.02,
+            );
+          }
+
+          _buildNoise() {
+            // small reusable white noise buffer (~0.35s)
+            const sr = this.ctx.sampleRate;
+            const len = Math.floor(sr * 0.35);
+            const buf = this.ctx.createBuffer(1, len, sr);
+            const data = buf.getChannelData(0);
+            for (let i = 0; i < len; i++) {
+              // slightly pink-ish by simple filter-ish shaping
+              data[i] = (Math.random() * 2 - 1) * (0.8 - 0.6 * (i / len));
+            }
+            this.noiseBuf = buf;
+          }
+
+          _env(g, t0, a, d, s, r) {
+            // ADSR on gain node g.gain
+            const p = g.gain;
+            p.cancelScheduledValues(t0);
+            p.setValueAtTime(0.0001, t0);
+            p.exponentialRampToValueAtTime(Math.max(0.0002, a), t0 + 0.001 + d);
+            p.exponentialRampToValueAtTime(
+              Math.max(0.0002, s),
+              t0 + 0.001 + d + 0.02,
+            );
+            p.exponentialRampToValueAtTime(0.0001, t0 + 0.001 + d + 0.02 + r);
+          }
+
+          cueDraw() {
+            if (!this.ctx) return;
+            const t = this.ctx.currentTime;
+            // sharp "sting" (triangle + subtle noise)
+            const o = this.ctx.createOscillator();
+            o.type = "triangle";
+            o.frequency.setValueAtTime(720, t);
+            o.frequency.exponentialRampToValueAtTime(1100, t + 0.05);
+            const g = this.ctx.createGain();
+            g.gain.value = 0.0001;
+            o.connect(g);
+            g.connect(this.master);
+            this._env(g, t, 0.24, 0.02, 0.1, 0.18);
+            o.start(t);
+            o.stop(t + 0.35);
+
+            const ns = this.ctx.createBufferSource();
+            ns.buffer = this.noiseBuf;
+            const ng = this.ctx.createGain();
+            ng.gain.value = 0.0001;
+            const hp = this.ctx.createBiquadFilter();
+            hp.type = "highpass";
+            hp.frequency.value = 2500;
+            ns.connect(hp);
+            hp.connect(ng);
+            ng.connect(this.master);
+            this._env(ng, t, 0.18, 0.01, 0.06, 0.12);
+            ns.start(t);
+            ns.stop(t + 0.22);
+          }
+
+          gunshot() {
+            if (!this.ctx) return;
+            const t = this.ctx.currentTime;
+
+            // Noise blast -> bandpass -> transient
+            const src = this.ctx.createBufferSource();
+            src.buffer = this.noiseBuf;
+
+            const bp = this.ctx.createBiquadFilter();
+            bp.type = "bandpass";
+            bp.frequency.setValueAtTime(1400, t);
+            bp.Q.value = 0.9;
+
+            const g = this.ctx.createGain();
+            g.gain.value = 0.0001;
+
+            src.connect(bp);
+            bp.connect(g);
+            g.connect(this.master);
+            this._env(g, t, 0.95, 0.02, 0.12, 0.2);
+            src.start(t);
+            src.stop(t + 0.28);
+
+            // Low thump (sine)
+            const o = this.ctx.createOscillator();
+            o.type = "sine";
+            o.frequency.setValueAtTime(120, t);
+            o.frequency.exponentialRampToValueAtTime(55, t + 0.12);
+            const g2 = this.ctx.createGain();
+            g2.gain.value = 0.0001;
+            o.connect(g2);
+            g2.connect(this.master);
+            this._env(g2, t, 0.55, 0.02, 0.18, 0.22);
+            o.start(t);
+            o.stop(t + 0.45);
+          }
+
+          falseStart() {
+            if (!this.ctx) return;
+            const t = this.ctx.currentTime;
+
+            // "warning siren" (square with pitch down)
+            const o = this.ctx.createOscillator();
+            o.type = "square";
+            o.frequency.setValueAtTime(520, t);
+            o.frequency.exponentialRampToValueAtTime(220, t + 0.22);
+
+            const g = this.ctx.createGain();
+            g.gain.value = 0.0001;
+            o.connect(g);
+            g.connect(this.master);
+
+            this._env(g, t, 0.5, 0.03, 0.16, 0.28);
+            o.start(t);
+            o.stop(t + 0.6);
+
+            // clicky noise
+            const src = this.ctx.createBufferSource();
+            src.buffer = this.noiseBuf;
+            const hp = this.ctx.createBiquadFilter();
+            hp.type = "highpass";
+            hp.frequency.value = 3200;
+            const ng = this.ctx.createGain();
+            ng.gain.value = 0.0001;
+            src.connect(hp);
+            hp.connect(ng);
+            ng.connect(this.master);
+            this._env(ng, t, 0.18, 0.01, 0.08, 0.18);
+            src.start(t);
+            src.stop(t + 0.22);
+          }
+
+          victory() {
+            if (!this.ctx) return;
+            const t = this.ctx.currentTime;
+            const freqs = [392, 494, 587]; // G B D-ish
+            freqs.forEach((f, i) => {
+              const o = this.ctx.createOscillator();
+              o.type = "triangle";
+              o.frequency.setValueAtTime(f, t + i * 0.03);
+              const g = this.ctx.createGain();
+              g.gain.value = 0.0001;
+              o.connect(g);
+              g.connect(this.master);
+              this._env(g, t + i * 0.03, 0.22, 0.02, 0.12, 0.2);
+              o.start(t + i * 0.03);
+              o.stop(t + 0.5);
+            });
+          }
+
+          tensionStart() {
+            if (!this.ctx) return;
+            // subtle ticking (id-based)
+            const id = ++this._tensionId;
+            const tick = () => {
+              if (id !== this._tensionId) return;
+              if (!this.ctx || this.ctx.state !== "running") return;
+              const t = this.ctx.currentTime;
+
+              const o = this.ctx.createOscillator();
+              o.type = "sine";
+              o.frequency.setValueAtTime(180 + Math.random() * 40, t);
+              const g = this.ctx.createGain();
+              g.gain.value = 0.0001;
+              o.connect(g);
+              g.connect(this.master);
+              this._env(g, t, 0.05, 0.01, 0.03, 0.08);
+              o.start(t);
+              o.stop(t + 0.15);
+
+              setTimeout(tick, 260 + Math.random() * 260);
+            };
+            tick();
+          }
+          tensionStop() {
+            this._tensionId++;
+          }
+        }
+
+        /******************************************************************
+         * FX Canvas (dust particles + muzzle flash + bullet streak + impact)
+         ******************************************************************/
+        class FX {
+          constructor(canvas) {
+            this.c = canvas;
+            this.ctx = canvas.getContext("2d", { alpha: true });
+            this.w = 0;
+            this.h = 0;
+            this.dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+
+            this.dust = [];
+            this.sparks = [];
+            this.bullets = [];
+            this.flash = 0;
+            this.slowMoUntil = 0;
+            this.timeScale = 1;
+
+            this._seedDust(140);
+          }
+
+          resize() {
+            const rect = this.c.getBoundingClientRect();
+            this.w = Math.max(1, rect.width);
+            this.h = Math.max(1, rect.height);
+            this.c.width = Math.floor(this.w * this.dpr);
+            this.c.height = Math.floor(this.h * this.dpr);
+            this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+          }
+
+          _seedDust(n) {
+            this.dust.length = 0;
+            for (let i = 0; i < n; i++) {
+              this.dust.push({
+                x: Math.random(),
+                y: Math.random(),
+                vx:
+                  (Math.random() * 0.22 + 0.05) *
+                  (Math.random() < 0.5 ? -1 : 1),
+                vy: Math.random() * 0.12 - 0.06,
+                r: 1 + Math.random() * 2.6,
+                a: 0.04 + Math.random() * 0.06,
+              });
+            }
+          }
+
+          triggerDrawBurst() {
+            this.flash = 1.0;
+            // extra sparks in the center to sell the "signal"
+            for (let i = 0; i < 30; i++) {
+              this.sparks.push({
+                x: 0.5 + (Math.random() * 0.08 - 0.04),
+                y: 0.48 + (Math.random() * 0.08 - 0.04),
+                vx: (Math.random() * 1.4 - 0.7) * 0.35,
+                vy: (Math.random() * 1.2 - 0.6) * 0.35,
+                life: 240 + Math.random() * 220,
+                t: 0,
+              });
+            }
+          }
+
+          triggerShot(fromSide /* 'L'|'R' */) {
+            const sx = fromSide === "L" ? 0.22 : 0.78;
+            const ex = fromSide === "L" ? 0.78 : 0.22;
+            const y = 0.56 + (Math.random() * 0.06 - 0.03);
+
+            this.bullets.push({
+              sx,
+              sy: y,
+              ex,
+              ey: y + (Math.random() * 0.03 - 0.015),
+              t: 0,
+              dur: 420, // ms
+            });
+
+            // muzzle sparks
+            for (let i = 0; i < 36; i++) {
+              const ang =
+                Math.random() * Math.PI * 0.9 -
+                Math.PI * 0.45 +
+                (fromSide === "L" ? 0 : Math.PI);
+              const spd = 0.45 + Math.random() * 1.55;
+              this.sparks.push({
+                x: sx + (fromSide === "L" ? 0.01 : -0.01),
+                y: y,
+                vx: Math.cos(ang) * spd * 0.35,
+                vy: Math.sin(ang) * spd * 0.35,
+                life: 260 + Math.random() * 240,
+                t: 0,
+              });
+            }
+
+            // slow motion for 0.3s (visual only)
+            this.slowMoUntil = now() + 300;
+          }
+
+          update(dt, tNow) {
+            // slow motion time scale
+            this.timeScale = tNow < this.slowMoUntil ? 0.25 : 1;
+
+            const ctx = this.ctx;
+            ctx.clearRect(0, 0, this.w, this.h);
+
+            // dust drift
+            for (const p of this.dust) {
+              p.x += (p.vx * dt) / 1000;
+              p.y += (p.vy * dt) / 1000;
+
+              // gentle swirl
+              p.y += Math.sin(p.x * 6 + tNow * 0.0004) * 0.00005 * dt;
+
+              if (p.x < -0.05) p.x += 1.1;
+              if (p.x > 1.05) p.x -= 1.1;
+              if (p.y < -0.05) p.y += 1.1;
+              if (p.y > 1.05) p.y -= 1.1;
+            }
+
+            // draw dust (soft circles)
+            ctx.save();
+            ctx.globalCompositeOperation = "lighter";
+            for (const p of this.dust) {
+              const x = p.x * this.w,
+                y = p.y * this.h;
+              const r = p.r;
+              ctx.beginPath();
+              ctx.fillStyle = `rgba(255, 235, 200, ${p.a})`;
+              ctx.arc(x, y, r, 0, Math.PI * 2);
+              ctx.fill();
+            }
+            ctx.restore();
+
+            // sparks
+            for (let i = this.sparks.length - 1; i >= 0; i--) {
+              const s = this.sparks[i];
+              s.t += dt;
+              const k = s.t / s.life;
+              const fade = 1 - k;
+              s.x += (s.vx * dt) / 1000;
+              s.y += (s.vy * dt) / 1000;
+              s.vy += (0.6 * dt) / 1000; // gravity-ish
+
+              const x = s.x * this.w,
+                y = s.y * this.h;
+              const r = lerp(2.2, 0.2, k);
+              this.ctx.beginPath();
+              this.ctx.fillStyle = `rgba(255, 210, 140, ${0.36 * fade})`;
+              this.ctx.arc(x, y, r, 0, Math.PI * 2);
+              this.ctx.fill();
+
+              if (s.t >= s.life) this.sparks.splice(i, 1);
+            }
+
+            // bullets
+            for (let i = this.bullets.length - 1; i >= 0; i--) {
+              const b = this.bullets[i];
+              b.t += dt;
+              const k = clamp(b.t / b.dur, 0, 1);
+              // ease out
+              const e = 1 - Math.pow(1 - k, 3);
+              const x = lerp(b.sx, b.ex, e);
+              const y = lerp(b.sy, b.ey, e);
+
+              // trail
+              const px = x * this.w,
+                py = y * this.h;
+              const tx = lerp(b.sx, x, 0.15) * this.w;
+              const ty = lerp(b.sy, y, 0.15) * this.h;
+
+              ctx.save();
+              ctx.globalCompositeOperation = "screen";
+              ctx.lineCap = "round";
+              ctx.lineWidth = 3.5;
+              const grad = ctx.createLinearGradient(tx, ty, px, py);
+              grad.addColorStop(0, "rgba(255,220,160,0)");
+              grad.addColorStop(0.45, "rgba(255,220,160,.35)");
+              grad.addColorStop(1, "rgba(255,255,255,.75)");
+              ctx.strokeStyle = grad;
+              ctx.beginPath();
+              ctx.moveTo(tx, ty);
+              ctx.lineTo(px, py);
+              ctx.stroke();
+
+              // hot core
+              ctx.lineWidth = 1.6;
+              ctx.strokeStyle = "rgba(255,255,255,.85)";
+              ctx.beginPath();
+              ctx.moveTo(lerp(tx, px, 0.2), lerp(ty, py, 0.2));
+              ctx.lineTo(px, py);
+              ctx.stroke();
+              ctx.restore();
+
+              // impact burst near end
+              if (k > 0.92 && b._impact !== true) {
+                b._impact = true;
+                for (let j = 0; j < 26; j++) {
+                  const ang = Math.random() * Math.PI * 2;
+                  const spd = 0.6 + Math.random() * 1.9;
+                  this.sparks.push({
+                    x: b.ex + (Math.random() * 0.01 - 0.005),
+                    y: b.ey + (Math.random() * 0.01 - 0.005),
+                    vx: Math.cos(ang) * spd * 0.25,
+                    vy: Math.sin(ang) * spd * 0.25,
+                    life: 240 + Math.random() * 260,
+                    t: 0,
+                  });
+                }
+              }
+
+              if (k >= 1) this.bullets.splice(i, 1);
+            }
+
+            // subtle global flash in canvas (separate from DOM flash)
+            if (this.flash > 0) {
+              this.flash = Math.max(0, this.flash - dt * 0.004);
+              ctx.save();
+              ctx.globalCompositeOperation = "screen";
+              ctx.fillStyle = `rgba(255,255,255,${this.flash * 0.07})`;
+              ctx.fillRect(0, 0, this.w, this.h);
+              ctx.restore();
+            }
+          }
+        }
+
+        /******************************************************************
+         * Game State Machine
+         ******************************************************************/
+        const State = Object.freeze({
+          IDLE: "IDLE",
+          ARMED: "ARMED",
+          WAITING: "WAITING",
+          DRAW: "DRAW",
+          RESULT: "RESULT",
+        });
+
+        const STORAGE_KEY = "split_duel_v1";
+
+        const Game = {
+          state: State.IDLE,
+          paused: false,
+          roundIndex: 0,
+          stateSince: 0,
+
+          settings: {
+            targetScore: 5,
+            volume: 0.7,
+            vibrate: true,
+            swapSides: false,
+            nameA: "PLAYER A",
+            nameB: "PLAYER B",
+          },
+
+          scores: { A: 0, B: 0 },
+
+          // current round data
+          round: null,
+
+          // timers (ms, updated in RAF so pause is clean)
+          waitRemaining: 0,
+          // timestamp for DRAW start
+          drawStartAt: 0,
+
+          // local history (last 10)
+          history: [],
+
+          // lock to ensure each player only first effective input per round
+          perRoundTouched: { A: false, B: false },
+
+          // audio + fx
+          audio: new AudioEngine(),
+          fx: null,
+
+          // DOM refs
+          dom: {},
+        };
+
+        function loadStorage() {
+          try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            if (!raw) return;
+            const data = JSON.parse(raw);
+            if (data.settings) Object.assign(Game.settings, data.settings);
+            if (data.scores) Object.assign(Game.scores, data.scores);
+            if (Array.isArray(data.history))
+              Game.history = data.history.slice(0, 10);
+            if (typeof data.roundIndex === "number")
+              Game.roundIndex = data.roundIndex;
+          } catch (_) {}
+        }
+        function saveStorage() {
+          try {
+            const data = {
+              settings: Game.settings,
+              scores: Game.scores,
+              history: Game.history,
+              roundIndex: Game.roundIndex,
+            };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+          } catch (_) {}
+        }
+
+        function setState(next) {
+          Game.state = next;
+          Game.stateSince = now();
+          updateUI();
+        }
+
+        function resetRoundLocks() {
+          Game.perRoundTouched.A = false;
+          Game.perRoundTouched.B = false;
+        }
+
+        function matchOver() {
+          return (
+            Game.scores.A >= Game.settings.targetScore ||
+            Game.scores.B >= Game.settings.targetScore
+          );
+        }
+
+        function startNextRound() {
+          if (Game.paused) return;
+          if (matchOver()) {
+            // if match is over, require reset to start again
+            softToast(
+              `已有人先到 ${Game.settings.targetScore} 分，点击“重置比分”开始新对局。`,
+              "warn",
+            );
+            return;
+          }
+
+          Game.roundIndex++;
+          resetRoundLocks();
+
+          Game.round = {
+            idx: Game.roundIndex,
+            winner: null, // 'A'|'B'
+            falseStartBy: null, // 'A'|'B'
+            timeA: null,
+            timeB: null,
+            drawDelay: 0,
+            at: Date.now(),
+          };
+
+          // ARMED -> short "ready" beat -> WAITING with random delay 1.5~4.5s
+          setState(State.ARMED);
+          Game.waitRemaining = 350;
+          Game.round.drawDelay = 0;
+
+          Game.audio.tensionStop();
+          Game.audio
+            .ensure()
+            .then(() => Game.audio.setVolume(Game.settings.volume))
+            .catch(() => {});
+          safeVibrate(10);
+        }
+
+        function enterWaiting() {
+          setState(State.WAITING);
+          Game.waitRemaining = rand(1500, 4500); // STRICT random per round
+          Game.round.drawDelay = Game.waitRemaining;
+
+          // start subtle tension ticks
+          Game.audio.tensionStart();
+          updateUI();
+        }
+
+        function enterDraw() {
+          Game.audio.tensionStop();
+          setState(State.DRAW);
+
+          Game.drawStartAt = now();
+          Game.fx.triggerDrawBurst();
+
+          // DOM burst
+          Game.dom.drawBurst.classList.remove("on");
+          void Game.dom.drawBurst.offsetWidth;
+          Game.dom.drawBurst.classList.add("on");
+
+          Game.dom.flash.classList.remove("on");
+          void Game.dom.flash.offsetWidth;
+          Game.dom.flash.classList.add("on");
+
+          // audio cue + small vib
+          Game.audio
+            .ensure()
+            .then(() => {
+              Game.audio.setVolume(Game.settings.volume);
+              Game.audio.cueDraw();
+            })
+            .catch(() => {});
+          safeVibrate([12, 18, 10]);
+        }
+
+        function finalizeRound({
+          winner,
+          falseStartBy,
+          timeA,
+          timeB,
+          reasonText,
+        }) {
+          // lock outcome: must only happen once
+          if (Game.state === State.RESULT) return;
+
+          Game.round.winner = winner;
+          Game.round.falseStartBy = falseStartBy;
+          Game.round.timeA = timeA;
+          Game.round.timeB = timeB;
+
+          // score update
+          if (winner === "A") Game.scores.A++;
+          if (winner === "B") Game.scores.B++;
+
+          // history
+          Game.history.unshift({
+            idx: Game.round.idx,
+            winner,
+            falseStartBy,
+            timeA,
+            timeB,
+            at: Game.round.at,
+          });
+          Game.history = Game.history.slice(0, 10);
+
+          setState(State.RESULT);
+
+          // victory sound optional
+          Game.audio
+            .ensure()
+            .then(() => {
+              Game.audio.setVolume(Game.settings.volume);
+              if (!falseStartBy) {
+                Game.audio.victory();
+              }
+            })
+            .catch(() => {});
+
+          // vib patterns
+          if (falseStartBy) {
+            safeVibrate([60, 30, 60]);
+          } else {
+            safeVibrate([18, 22, 18, 22, 36]);
+          }
+
+          // UI effect: score bump
+          bumpScore(winner);
+
+          // match over toast
+          if (matchOver()) {
+            const who = Game.scores.A >= Game.settings.targetScore ? "A" : "B";
+            softToast(
+              `${getPlayerName(who)} 先到 ${Game.settings.targetScore} 分，赢得整场！`,
+              "good",
+            );
+          } else {
+            softToast(reasonText, falseStartBy ? "bad" : "good");
+          }
+
+          saveStorage();
+        }
+
+        function bumpScore(who) {
+          if (who === "A") {
+            Game.dom.scoreA.classList.add("bump");
+            setTimeout(() => Game.dom.scoreA.classList.remove("bump"), 220);
+          } else if (who === "B") {
+            Game.dom.scoreB.classList.add("bump");
+            setTimeout(() => Game.dom.scoreB.classList.remove("bump"), 220);
+          }
+        }
+
+        function falseStart(offender) {
+          // offender pressed before DRAW signal
+          const winner = offender === "A" ? "B" : "A";
+
+          // sound + shake + DOM flash is subtler here (not full white)
+          Game.audio
+            .ensure()
+            .then(() => {
+              Game.audio.setVolume(Game.settings.volume);
+              Game.audio.falseStart();
+            })
+            .catch(() => {});
+
+          screenShake();
+          Game.dom.drawBurst.classList.remove("on");
+          void Game.dom.drawBurst.offsetWidth;
+          Game.dom.drawBurst.classList.add("on");
+
+          finalizeRound({
+            winner,
+            falseStartBy: offender,
+            timeA: null,
+            timeB: null,
+            reasonText: `抢跑！${getPlayerName(offender)} 判负`,
+          });
+        }
+
+        function shot(player) {
+          // shot allowed only in DRAW
+          const t = now();
+          const rt = t - Game.drawStartAt;
+
+          // record time (strict: only first of each player)
+          if (player === "A") Game.round.timeA = rt;
+          if (player === "B") Game.round.timeB = rt;
+
+          // winner is first shot
+          const winner = player;
+
+          // fx + audio + flash + shake
+          Game.audio
+            .ensure()
+            .then(() => {
+              Game.audio.setVolume(Game.settings.volume);
+              Game.audio.gunshot();
+            })
+            .catch(() => {});
+          Game.dom.flash.classList.remove("on");
+          void Game.dom.flash.offsetWidth;
+          Game.dom.flash.classList.add("on");
+          screenShake();
+
+          // bullet direction depends on side mapping
+          const fromSide = getPlayerSide(player); // 'L' or 'R'
+          Game.fx.triggerShot(fromSide);
+
+          finalizeRound({
+            winner,
+            falseStartBy: null,
+            timeA: Game.round.timeA,
+            timeB: Game.round.timeB,
+            reasonText: `${getPlayerName(winner)} 胜！反应：${fmtMs(rt)}`,
+          });
+        }
+
+        function handleInput(player, e) {
+          if (Game.paused) return;
+
+          // one input per player per round (multi-touch safe)
+          if (Game.perRoundTouched[player]) return;
+          Game.perRoundTouched[player] = true;
+
+          // visual press feedback (zone scale)
+          const zoneEl =
+            getPlayerSide(player) === "L"
+              ? Game.dom.zoneLeft
+              : Game.dom.zoneRight;
+          if (zoneEl && e && e.clientX != null) {
+            addRipple(zoneEl, e.clientX, e.clientY);
+          }
+
+          // State rules:
+          if (Game.state === State.IDLE) {
+            // ignore, to keep strict flow (must tap Next)
+            return;
+          }
+
+          // Pre-signal triggers false start
+          if (Game.state === State.ARMED || Game.state === State.WAITING) {
+            falseStart(player);
+            return;
+          }
+
+          if (Game.state === State.DRAW) {
+            // only first overall shot decides. After RESULT, inputs ignored by state.
+            shot(player);
+            return;
+          }
+
+          // RESULT: ignore
+        }
+
+        /******************************************************************
+         * Side swap mapping
+         ******************************************************************/
+        function getPlayerName(p) {
+          return p === "A" ? Game.settings.nameA : Game.settings.nameB;
+        }
+        function getPlayerKey(p) {
+          // if swapSides: A/B keys swap too
+          if (!Game.settings.swapSides) {
+            return p === "A" ? "SPACE" : "ENTER";
+          }
+          return p === "A" ? "ENTER" : "SPACE";
+        }
+        function getPlayerSide(p) {
+          // returns which half the player occupies: 'L' or 'R'
+          // default: A left, B right. swap => A right, B left.
+          if (!Game.settings.swapSides) {
+            return p === "A" ? "L" : "R";
+          }
+          return p === "A" ? "R" : "L";
+        }
+        function sideToPlayer(side /* 'L'|'R' */) {
+          // which player is on that side
+          if (!Game.settings.swapSides) {
+            return side === "L" ? "A" : "B";
+          }
+          return side === "L" ? "B" : "A";
+        }
+
+        /******************************************************************
+         * UI Update
+         ******************************************************************/
+        function updateUI() {
+          const s = Game.state;
+
+          Game.dom.stateText.textContent = s;
+          Game.dom.metaState.textContent = s;
+          Game.dom.metaRound.textContent = String(Game.roundIndex);
+
+          Game.dom.scoreA.textContent = Game.scores.A;
+          Game.dom.scoreB.textContent = Game.scores.B;
+          Game.dom.targetLabel.textContent = `FIRST TO ${Game.settings.targetScore}`;
+
+          // Names + tags
+          Game.dom.nameA.textContent = Game.settings.nameA;
+          Game.dom.nameB.textContent = Game.settings.nameB;
+
+          // Top bar sub hints (show current mapping)
+          const aKey = getPlayerKey("A");
+          const bKey = getPlayerKey("B");
+
+          // Display "left side is who" mapping in zones
+          const leftP = sideToPlayer("L");
+          const rightP = sideToPlayer("R");
+
+          Game.dom.leftPlayerTag.textContent = `PLAYER ${leftP}`;
+          Game.dom.rightPlayerTag.textContent = `PLAYER ${rightP}`;
+          Game.dom.leftPlayerName.textContent = getPlayerName(leftP);
+          Game.dom.rightPlayerName.textContent = getPlayerName(rightP);
+
+          // key hints per side
+          Game.dom.leftKeyHint.textContent = getPlayerKey(leftP);
+          Game.dom.rightKeyHint.textContent = getPlayerKey(rightP);
+
+          // topbar sub text
+          Game.dom.subA.textContent = `${aKey} / ${getPlayerSide("A") === "L" ? "Tap Left" : "Tap Right"}`;
+          Game.dom.subB.textContent = `${bKey} / ${getPlayerSide("B") === "L" ? "Tap Left" : "Tap Right"}`;
+
+          // mini state text inside each zone
+          Game.dom.leftMiniState.textContent = s;
+          Game.dom.rightMiniState.textContent = s;
+
+          // center subtitle + tips
+          let sub = "";
+          let tip = "WAIT FOR DRAW";
+          if (s === State.IDLE) {
+            sub = "点击“下一局”进入对峙。信号出现前出手会抢跑判负。";
+            tip = "PRESS NEXT";
+          } else if (s === State.ARMED) {
+            sub = "READY… 保持冷静。任何提前输入都算抢跑。";
+            tip = "DON’T MOVE";
+          } else if (s === State.WAITING) {
+            sub = "WAIT… 随机时刻会出现 “DRAW”。不要抢跑。";
+            tip = "HOLD…";
+          } else if (s === State.DRAW) {
+            sub = "DRAW! 现在立刻出手！";
+            tip = "FIRE NOW";
+          } else if (s === State.RESULT) {
+            const r = Game.round;
+            if (r.falseStartBy) {
+              sub = `抢跑判负：${getPlayerName(r.falseStartBy)}（本局结束）`;
+              tip = "FALSE START";
+            } else {
+              sub = `胜者：${getPlayerName(r.winner)} | A:${fmtMs(r.timeA)}  B:${fmtMs(r.timeB)}`;
+              tip = "ROUND OVER";
+            }
+          }
+          Game.dom.stateSub.textContent = sub;
+          Game.dom.metaTip.textContent = tip;
+
+          // zone highlight for result
+          Game.dom.zoneLeft.classList.remove("win", "lose");
+          Game.dom.zoneRight.classList.remove("win", "lose");
+
+          if (s === State.RESULT && Game.round) {
+            const w = Game.round.winner; // A/B
+            const l = w === "A" ? "B" : "A";
+            const wSide = getPlayerSide(w);
+            const lSide = getPlayerSide(l);
+            const wEl = wSide === "L" ? Game.dom.zoneLeft : Game.dom.zoneRight;
+            const lEl = lSide === "L" ? Game.dom.zoneLeft : Game.dom.zoneRight;
+            wEl.classList.add("win");
+            lEl.classList.add("lose");
+          }
+
+          // buttons
+          Game.dom.btnNext.disabled =
+            Game.paused || matchOver() ? (matchOver() ? false : true) : false;
+          // if match over: allow Next to show toast rather than disable (UX)
+          if (matchOver()) {
+            Game.dom.btnNext.disabled = false;
+          }
+
+          // last meta
+          if (Game.history[0]) {
+            const h = Game.history[0];
+            let last = "";
+            if (h.falseStartBy) {
+              last = `FS: ${getPlayerName(h.falseStartBy)} → ${getPlayerName(h.winner)} +1`;
+            } else {
+              last = `${getPlayerName(h.winner)} +1 (${fmtMs(h.winner === "A" ? h.timeA : h.timeB)})`;
+            }
+            Game.dom.metaLast.textContent = last;
+          } else {
+            Game.dom.metaLast.textContent = "—";
+          }
+
+          renderHistory();
+
+          // in-zone guidance text
+          if (s === State.DRAW) {
+            Game.dom.leftHintSub.textContent = "现在！立刻出手！";
+            Game.dom.rightHintSub.textContent = "现在！立刻出手！";
+          } else if (s === State.RESULT) {
+            Game.dom.leftHintSub.textContent = "点击“下一局”继续。";
+            Game.dom.rightHintSub.textContent = "点击“下一局”继续。";
+          } else if (s === State.WAITING) {
+            Game.dom.leftHintSub.textContent = "保持不动。随机信号马上到。";
+            Game.dom.rightHintSub.textContent = "保持不动。随机信号马上到。";
+          } else if (s === State.ARMED) {
+            Game.dom.leftHintSub.textContent = "准备姿势… 不要抢跑。";
+            Game.dom.rightHintSub.textContent = "准备姿势… 不要抢跑。";
+          } else {
+            Game.dom.leftHintSub.textContent =
+              "等待信号出现后再出手。抢跑直接判负。";
+            Game.dom.rightHintSub.textContent =
+              "听到/看到 “DRAW” 再按。反应越快越好。";
+          }
+        }
+
+        function renderHistory() {
+          const list = Game.dom.historyList;
+          list.innerHTML = "";
+          if (!Game.history.length) {
+            const empty = document.createElement("div");
+            empty.className = "item";
+            empty.innerHTML = `
+        <div class="chip X">—</div>
+        <div class="desc">
+          <div class="t">NO HISTORY</div>
+          <div class="s">完成一局后，这里会显示最近 10 局（本地保存）。</div>
+        </div>`;
+            list.appendChild(empty);
+            return;
+          }
+
+          for (const h of Game.history) {
+            const chipCls = h.winner === "A" ? "A" : "B";
+            const title = h.falseStartBy
+              ? `FALSE START • ${getPlayerName(h.falseStartBy)} → ${getPlayerName(h.winner)}`
+              : `WIN • ${getPlayerName(h.winner)}`;
+            const sub = h.falseStartBy
+              ? `抢跑判负 | A:${fmtMs(h.timeA)}  B:${fmtMs(h.timeB)}`
+              : `反应时间 | A:${fmtMs(h.timeA)}  B:${fmtMs(h.timeB)}`;
+
+            const el = document.createElement("div");
+            el.className = "item";
+            el.innerHTML = `
+        <div class="chip ${chipCls}">${h.winner}</div>
+        <div class="desc">
+          <div class="t">#${h.idx} • ${title}</div>
+          <div class="s">${sub}</div>
+        </div>
+      `;
+            list.appendChild(el);
+          }
+        }
+
+        /******************************************************************
+         * Visual shake + toast
+         ******************************************************************/
+        let toastTimer = 0;
+        function softToast(text, type /* 'good'|'bad'|'warn' */) {
+          // reuse center subtitle for quick "sale-grade" feedback
+          clearTimeout(toastTimer);
+          const el = Game.dom.stateSub;
+          const prev = el.textContent;
+          el.textContent = text;
+          el.style.color =
+            type === "good"
+              ? "rgba(102,240,168,.92)"
+              : type === "bad"
+                ? "rgba(255,92,92,.92)"
+                : type === "warn"
+                  ? "rgba(255,209,102,.92)"
+                  : "rgba(246,239,226,.72)";
+          toastTimer = setTimeout(() => {
+            el.style.color = "";
+            updateUI(); // restore state subtitle
+          }, 1400);
+        }
+
+        function screenShake() {
+          // lightweight class-based shake
+          const root = Game.dom.app;
+          root.classList.remove("shake");
+          void root.offsetWidth;
+          root.classList.add("shake");
+          setTimeout(() => root.classList.remove("shake"), 520);
+        }
+
+        /******************************************************************
+         * Main Loop (state timers + fx)
+         ******************************************************************/
+        let lastT = now();
+
+        function tick(t) {
+          const rawDt = t - lastT;
+          lastT = t;
+
+          if (!Game.paused) {
+            // FX slow motion time scale is internal
+            const scaledDt = rawDt * Game.fx.timeScale;
+
+            // timers driven by state machine (pause-safe)
+            if (Game.state === State.ARMED) {
+              Game.waitRemaining -= scaledDt;
+              if (Game.waitRemaining <= 0) {
+                enterWaiting();
+              }
+            } else if (Game.state === State.WAITING) {
+              Game.waitRemaining -= scaledDt;
+              if (Game.waitRemaining <= 0) {
+                enterDraw();
+              }
+            }
+
+            Game.fx.update(scaledDt, t);
+          } else {
+            // still animate subtle dust even when paused? keep it ultra subtle
+            Game.fx.update(rawDt * 0.25, t);
+          }
+
+          requestAnimationFrame(tick);
+        }
+
+        /******************************************************************
+         * Input (touch/mouse via pointer events, keyboard)
+         ******************************************************************/
+        function bindInputs() {
+          const { zoneLeft, zoneRight } = Game.dom;
+
+          const onDown = (side) => (e) => {
+            if (e && e.cancelable) e.preventDefault();
+            // pressed feedback
+            const z = side === "L" ? zoneLeft : zoneRight;
+            z.classList.add("isPressed");
+            setTimeout(() => z.classList.remove("isPressed"), 90);
+
+            // unlock audio on first user gesture
+            Game.audio
+              .ensure()
+              .then(() => Game.audio.setVolume(Game.settings.volume))
+              .catch(() => {});
+
+            // map side -> player
+            const p = sideToPlayer(side);
+            handleInput(p, e);
+          };
+
+          zoneLeft.addEventListener("pointerdown", onDown("L"), {
+            passive: false,
+          });
+          zoneRight.addEventListener("pointerdown", onDown("R"), {
+            passive: false,
+          });
+
+          // keyboard
+          const keyDown = (e) => {
+            if (e.repeat) return; // key repeat handled
+            if (e.code === "Space" || e.code === "Enter") {
+              e.preventDefault();
+              Game.audio
+                .ensure()
+                .then(() => Game.audio.setVolume(Game.settings.volume))
+                .catch(() => {});
+            }
+
+            // map keys based on swapSides
+            // default: A=Space, B=Enter. swap: A=Enter, B=Space.
+            if (!Game.settings.swapSides) {
+              if (e.code === "Space")
+                handleInput("A", {
+                  clientX: window.innerWidth * 0.25,
+                  clientY: window.innerHeight * 0.5,
+                });
+              if (e.code === "Enter")
+                handleInput("B", {
+                  clientX: window.innerWidth * 0.75,
+                  clientY: window.innerHeight * 0.5,
+                });
+            } else {
+              if (e.code === "Space")
+                handleInput("B", {
+                  clientX: window.innerWidth * 0.25,
+                  clientY: window.innerHeight * 0.5,
+                });
+              if (e.code === "Enter")
+                handleInput("A", {
+                  clientX: window.innerWidth * 0.75,
+                  clientY: window.innerHeight * 0.5,
+                });
+            }
+          };
+          document.addEventListener("keydown", keyDown, { passive: false });
+
+          // Buttons
+          const btn = (id, fn) => {
+            const el = Game.dom[id];
+            el.addEventListener("pointerdown", (e) => {
+              addRipple(el, e.clientX, e.clientY);
+            });
+            el.addEventListener("click", () => {
+              Game.audio
+                .ensure()
+                .then(() => Game.audio.setVolume(Game.settings.volume))
+                .catch(() => {});
+              fn();
+            });
+          };
+
+          btn("btnNext", () => {
+            if (matchOver()) {
+              softToast(
+                `比赛已结束：${Game.scores.A >= Game.settings.targetScore ? getPlayerName("A") : getPlayerName("B")} 获胜。重置比分开始新对局。`,
+                "warn",
+              );
+              return;
+            }
+            startNextRound();
+          });
+
+          btn("btnReset", () => {
+            Game.audio.tensionStop();
+            Game.scores.A = 0;
+            Game.scores.B = 0;
+            Game.roundIndex = 0;
+            Game.history = [];
+            Game.round = null;
+            resetRoundLocks();
+            setState(State.IDLE);
+            saveStorage();
+            softToast("比分已重置。点击“下一局”开始。", "warn");
+          });
+
+          btn("btnPause", () => togglePause());
+
+          btn("btnSettings", () => openSettings());
+
+          btn("btnResume", () => togglePause(false));
+          btn("btnClosePause", () => togglePause(false));
+
+          // close settings
+          btn("btnCloseSettings", () => closeSettings(false));
+          btn("btnSaveSettings", () => closeSettings(true));
+        }
+
+        function togglePause(force) {
+          const next = typeof force === "boolean" ? force : !Game.paused;
+          Game.paused = next;
+          Game.dom.pauseOverlay.classList.toggle("on", Game.paused);
+          Game.dom.btnPause.textContent = Game.paused ? "继续" : "暂停";
+          // stop tension while paused
+          if (Game.paused) Game.audio.tensionStop();
+          else if (Game.state === State.WAITING) Game.audio.tensionStart();
+          updateUI();
+        }
+
+        /******************************************************************
+         * Settings modal
+         ******************************************************************/
+        function openSettings() {
+          // populate fields
+          Game.dom.selTarget.value = String(Game.settings.targetScore);
+          Game.dom.rngVol.value = String(
+            Math.round(Game.settings.volume * 100),
+          );
+          Game.dom.volLabel.textContent = `${Math.round(Game.settings.volume * 100)}%`;
+          Game.dom.inpA.value = Game.settings.nameA;
+          Game.dom.inpB.value = Game.settings.nameB;
+
+          Game.dom.swVibe.classList.toggle("on", !!Game.settings.vibrate);
+          Game.dom.swSwap.classList.toggle("on", !!Game.settings.swapSides);
+
+          Game.dom.settingsModal.classList.add("on");
+        }
+
+        function closeSettings(save) {
+          if (save) {
+            const target = parseInt(Game.dom.selTarget.value, 10);
+            Game.settings.targetScore = [3, 5, 10].includes(target)
+              ? target
+              : 5;
+
+            const vol = clamp(parseInt(Game.dom.rngVol.value, 10) / 100, 0, 1);
+            Game.settings.volume = vol;
+
+            const a = (Game.dom.inpA.value || "PLAYER A").trim().slice(0, 14);
+            const b = (Game.dom.inpB.value || "PLAYER B").trim().slice(0, 14);
+            Game.settings.nameA = a || "PLAYER A";
+            Game.settings.nameB = b || "PLAYER B";
+
+            // switches already toggled via click
+            Game.settings.vibrate = Game.dom.swVibe.classList.contains("on");
+            Game.settings.swapSides = Game.dom.swSwap.classList.contains("on");
+
+            Game.audio
+              .ensure()
+              .then(() => Game.audio.setVolume(Game.settings.volume))
+              .catch(() => {});
+
+            // if target score lowered below current, keep scores but matchOver might trigger immediately (okay)
+            saveStorage();
+            updateUI();
+            softToast("设置已保存。", "good");
+          }
+
+          Game.dom.settingsModal.classList.remove("on");
+        }
+
+        function bindSettingsControls() {
+          Game.dom.rngVol.addEventListener("input", () => {
+            const v = parseInt(Game.dom.rngVol.value, 10);
+            Game.dom.volLabel.textContent = `${v}%`;
+          });
+
+          const toggleSwitch = (el) => {
+            el.addEventListener("click", (e) => {
+              addRipple(el, e.clientX, e.clientY);
+              el.classList.toggle("on");
+            });
+          };
+          toggleSwitch(Game.dom.swVibe);
+          toggleSwitch(Game.dom.swSwap);
+        }
+
+        /******************************************************************
+         * Init
+         ******************************************************************/
+        function initDom() {
+          Game.dom = {
+            app: $("#app"),
+            fx: $("#fx"),
+            arena: $("#arena"),
+            zoneLeft: $("#zoneLeft"),
+            zoneRight: $("#zoneRight"),
+            stateText: $("#stateText"),
+            stateSub: $("#stateSub"),
+            drawBurst: $("#drawBurst"),
+            flash: $("#flash"),
+
+            nameA: $("#nameA"),
+            nameB: $("#nameB"),
+            subA: $("#subA"),
+            subB: $("#subB"),
+            badgeA: $("#badgeA"),
+            badgeB: $("#badgeB"),
+
+            scoreA: $("#scoreA"),
+            scoreB: $("#scoreB"),
+            targetLabel: $("#targetLabel"),
+
+            leftPlayerTag: $("#leftPlayerTag"),
+            rightPlayerTag: $("#rightPlayerTag"),
+            leftPlayerName: $("#leftPlayerName"),
+            rightPlayerName: $("#rightPlayerName"),
+            leftMiniState: $("#leftMiniState"),
+            rightMiniState: $("#rightMiniState"),
+            leftKeyHint: $("#leftKeyHint"),
+            rightKeyHint: $("#rightKeyHint"),
+            leftHintText: $("#leftHintText"),
+            rightHintText: $("#rightHintText"),
+            leftHintSub: $("#leftHintSub"),
+            rightHintSub: $("#rightHintSub"),
+
+            metaState: $("#metaState"),
+            metaRound: $("#metaRound"),
+            metaLast: $("#metaLast"),
+            metaTip: $("#metaTip"),
+
+            historyList: $("#historyList"),
+            histSmall: $("#histSmall"),
+
+            btnNext: $("#btnNext"),
+            btnPause: $("#btnPause"),
+            btnReset: $("#btnReset"),
+            btnSettings: $("#btnSettings"),
+
+            pauseOverlay: $("#pauseOverlay"),
+            btnResume: $("#btnResume"),
+            btnClosePause: $("#btnClosePause"),
+
+            settingsModal: $("#settingsModal"),
+            selTarget: $("#selTarget"),
+            rngVol: $("#rngVol"),
+            volLabel: $("#volLabel"),
+            swVibe: $("#swVibe"),
+            swSwap: $("#swSwap"),
+            inpA: $("#inpA"),
+            inpB: $("#inpB"),
+            btnCloseSettings: $("#btnCloseSettings"),
+            btnSaveSettings: $("#btnSaveSettings"),
+          };
+        }
+
+        function initFX() {
+          Game.fx = new FX(Game.dom.fx);
+          const onResize = () => Game.fx.resize();
+          window.addEventListener("resize", onResize);
+          onResize();
+        }
+
+        function init() {
+          initDom();
+          loadStorage();
+
+          // apply settings to UI + audio
+          Game.dom.rngVol.value = String(
+            Math.round(Game.settings.volume * 100),
+          );
+          Game.dom.volLabel.textContent = `${Math.round(Game.settings.volume * 100)}%`;
+
+          initFX();
+          bindInputs();
+          bindSettingsControls();
+
+          setState(State.IDLE);
+          updateUI();
+
+          // start loop
+          lastT = now();
+          requestAnimationFrame(tick);
+
+          // small hint about audio unlock on mobile
+          setTimeout(() => {
+            if (!Game.audio.unlocked) {
+              softToast("提示：首次点击/触摸会解锁音效（WebAudio）。", "warn");
+            }
+          }, 650);
+        }
+
+        init();
+      })();
+    </script>
+  </body>
+</html>
