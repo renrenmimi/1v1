@@ -1,85 +1,112 @@
-# Literature Review: Family Sleep, Community Sleep Interventions, Family Cohesion, and ICC Findings
+# Literature Review: Sleep Instruments, Family Sleep Factors, Community Interventions, Family Cohesion, and ICC Findings
 
 **Prepared:** 2026-07-14
 
-**Scope:** Peer-reviewed journal articles only. US and/or Latino/Hispanic populations prioritized. Non-US or non-Latino papers are included only as foundational instruments/methods and are flagged as such.
+**Scope:** Peer-reviewed journal articles only. US and/or Latino/Hispanic populations prioritized; non-US items are foundational instruments/methods and are flagged.
 
-**Verification note:** Direct page-fetching of PubMed/PMC/publisher sites was blocked by the environment proxy (HTTP 403), so titles, authors, journals, years, and ICC values were confirmed against web-search result text drawn from the source pages — not fabricated. Confirm exact page numbers and in-context values at each link before citing in a manuscript.
-
----
-
-## 1. Family Sleep Measures
-
-| Paper link | Title | Population | Key relevant finding(s) |
-|---|---|---|---|
-| https://doi.org/10.1177/0883073808321044 · https://pubmed.ncbi.nlm.nih.gov/19168814/ | A sleep habits questionnaire for children with autism spectrum disorders (introduces the **Family Inventory of Sleep Habits, FISH**) — Malow et al., 2009, *J Child Neurol* 24(1):19–24 | **US**; children 4–10 yr, ASD + TD | FISH is a parent-report measure of family/child sleep hygiene (daytime habits, pre-bedtime, bedtime routine, sleep environment, parental bedtime behaviors); reported valid and reliable in ASD. Most established "family-level" sleep instrument. |
-| https://doi.org/10.1007/s10862-009-9143-3 | Development and Preliminary Evaluation of the **Bedtime Routines Questionnaire (BRQ)** — Henderson & Jordan, 2010, *J Psychopathol Behav Assess* 32:271–280 | **US**; 226 caregivers of children 2–8 yr | 31-item parent-report measure of children's bedtime routines; solid factor structure, adequate internal consistency, fair validity. |
-| https://doi.org/10.5664/jcsm.10110 · https://pubmed.ncbi.nlm.nih.gov/35702021/ | Development of a scale to assess children's and adolescents' sleep environments — Peltz et al., 2022, *J Clin Sleep Med* 18(10):2353–2365 | **US**; 840 caregivers, children 5–18 yr | 13-item parent-report scale, 3 factors (environmental hazards, bedding availability, presence of electronics); validated via EFA/CFA in split-half samples. |
-| https://doi.org/10.1016/j.sleh.2021.11.004 | Sleep-related parenting self-efficacy and parent-reported sleep in young children: a dyadic analysis of actor and partner effects — Werner, Mayer & Lohaus, 2022, *Sleep Health* 8(1):54–61 | Germany (⚠️ non-US); 131 mother–father dyads | Actor–partner interdependence model measuring sleep-related parenting self-efficacy dyadically; links parental self-efficacy to child sleep problems. Included as a dyadic-measurement exemplar. |
-| https://pubmed.ncbi.nlm.nih.gov/36055935/ | Sleep health among U.S. Hispanic/Latinx children: correlates of meeting sleep-duration recommendations — Schmied et al., 2022, *Sleep Health* | **US, Hispanic/Latinx**; 1,165 children (~6.4 yr) | 61.4% met sleep-duration guidelines; regular/consistent bedtime and living above the poverty threshold significantly raised odds of meeting recommendations. |
-| https://doi.org/10.1097/MOP.0000000000001306 · https://pubmed.ncbi.nlm.nih.gov/37933679/ | Assessing sleep behaviors in Latino children and adolescents: what is known, what are we missing, and how do we move forward? — Blanco, Hyde & Martinez, 2024, *Curr Opin Pediatr* 36(1):17–22 | **US, Latino** (review) | Identifies need to account for cultural/contextual family factors (co-sleeping, bed-sharing) in sleep measurement; a measurement-gap analysis relevant to family sleep instruments. |
-
-### Household / home sleep environment (bed-sharing & room-sharing, crowding, housing type/quality, neighborhood physical environment)
-
-| Paper link | Title | Population | Key relevant finding(s) |
-|---|---|---|---|
-| https://doi.org/10.3390/ijerph192013599 | Development and Initial Validation of the Assessment of Sleep Environment (ASE) — Grandner et al., 2022, *Int J Environ Res Public Health* 19(20):13599 | **US**; 1,007 adults 22–60 (SHADES) | 13-item validated self-report scale of the subjective bedroom environment (light, temperature, safety, noise, comfort, humidity, smell); physical-environment score associated with insomnia symptoms and sleep quality. Most directly relevant validated instrument for the physical home sleep environment. |
-| https://pubmed.ncbi.nlm.nih.gov/25386692/ | Sleep and the Housing and Neighborhood Environment of Urban Latino Adults Living in Low-Income Housing: The AHOME Study — Chambers, Pichardo & Rosenbaum, 2016, *Behav Sleep Med* | **US, Latino**; 371 low-income adults, Bronx NY | Operationalizes household crowding (persons/room) + perceived building problems; crowding associated with reduced odds of long sleep, and neighborhood/building problems with more sleep disturbance. |
-| https://pubmed.ncbi.nlm.nih.gov/29561769/ | Black–White Differences in Housing Type and Sleep Duration as Well as Sleep Difficulties in the United States — Johnson et al., 2018, *Int J Environ Res Public Health* 15(4):564 | **US**; 226,208 adults (NHIS) | Housing type (mobile home/trailer vs house/apartment) linked to worse sleep; documents housing as a driver of Black–White sleep disparities. |
-| https://doi.org/10.1007/s11524-019-00418-5 | Broken Windows, Broken Zzs: Poor Housing and Neighborhood Conditions Are Associated with Objective Measures of Sleep Health — Troxel et al., 2020, *J Urban Health* | **US**; low-income adults, Pittsburgh (actigraphy) | Combined interior/exterior housing-problem measure; adverse housing conditions independently associated with shorter actigraphic total sleep time. |
-| https://pmc.ncbi.nlm.nih.gov/articles/PMC8844874/ | Exterior Housing Conditions Are Associated With Objective Measures of Poor Sleep — Okoye, Perrin, Szanton & Spira, 2021, *Sleep Health* | **US**; 136 low-income, predominantly African-American older adults | Third-party-rated home/neighborhood disrepair; ≥1 outside-home disrepair condition = ~36 min shorter TST, more WASO, lower sleep efficiency. |
-| https://doi.org/10.1093/aje/kwad016 | Neighborhood Built Environment and Sleep Health: A Longitudinal Study in Low-Income and Predominantly African-American Neighborhoods — Kim et al., 2023, *Am J Epidemiol* 192(5):736–747 | **US**; 1,051 residents, Pittsburgh (PHRESH Zzz) | Longitudinal repeated measures of the neighborhood physical/built environment linked to objective sleep outcomes in disadvantaged neighborhoods. |
-| https://pubmed.ncbi.nlm.nih.gov/23161266/ | Association Between Housing Quality and Sleep Quality Among Latino Farmworkers — Sandberg et al., 2014, *J Immigr Minor Health* | **US, Latino**; 371 male farmworkers, NC | Housing-quality inventory (incl. air conditioning); access to air conditioning positively and independently associated with good sleep quality. |
-| https://www.sciencedirect.com/science/article/abs/pii/S0277953625008548 | Housing crowding and sleep health in urban China (psychosocial mediation) — 2025, *Social Science & Medicine* ⚠️ author byline unconfirmed | China; nationally representative adults (CFPS 2022) | Housing crowding associated with abnormal sleep duration, partially mediated by subjective well-being and self-perceived social status. Verify exact title/authors before citing. |
-| https://doi.org/10.1111/cdev.13146 | Parent–Infant Room Sharing During the First Months of Life — Beijers, Cassidy, Lustermans & de Weerth, 2019, *Child Development* 90(4):1350–1367 | Netherlands (non-US); 193 infant–parent dyads | Room sharing measured via a daily infant sleep-location diary over 6 months; more weeks of room sharing linked to higher maternal-rated sleep quality and prosocial behavior, no adverse effects. |
+**Verification:** All DOIs / PubMed IDs / URLs were checked to resolve to the stated article, with titles/authors/journals/years matching the published record. Direct page-fetching was proxy-blocked (HTTP 403), so confirmation rests on web-search result text drawn from the source pages. Confirm exact page numbers and in-context values at each link before citing.
 
 ---
 
-## 2. Community Sleep Interventions
+## Tab 1 — Sleep Instruments (scored household / family / environment measures)
+
+*Only validated instruments that yield a computable score/index at the household, family, or sleep-environment level — the most useful for constructing a family/household sleep "score."*
+
+| Paper link | Instrument / Title | Authors / Year / Journal | Population | What it scores + structure / validation |
+|---|---|---|---|---|
+| https://doi.org/10.3390/ijerph192013599 | **Assessment of Sleep Environment (ASE)** — Development and Initial Validation | Grandner et al., 2022, *Int J Environ Res Public Health* 19(20):13599 | **US**; 1,007 adults 22–60 (SHADES) | ⭐ Star instrument for the home sleep environment. 13-item validated self-report scale scoring the subjective bedroom environment (light, temperature, safety, noise, comfort, humidity, smell); higher = more disruptive, associated with insomnia symptoms and poorer sleep quality. |
+| https://doi.org/10.1177/0883073808321044 | **Family Inventory of Sleep Habits (FISH)** | Malow et al., 2009, *J Child Neurol* 24(1):19–24 | **US**; children 4–10 yr (ASD + TD) | Parent-report **family-level** sleep-hygiene score: daytime habits, pre-bedtime & bedtime routine, sleep environment, parental bedtime behaviors. The most established family-level scored sleep instrument. |
+| https://doi.org/10.5664/jcsm.10110 | **Children's and Adolescents' Sleep Environment Scale (CASES)** | Peltz, Rogge, Elmore-Staton, Spilsbury & Buckhalt, 2022, *J Clin Sleep Med* 18(10):2353–2365 | **US**; 840 caregivers, children 5–18 yr | 13-item parent-report scale scoring the child's sleep environment across 3 factors (environmental hazards, bedding availability, presence of electronics); validated via EFA/CFA. |
+| https://doi.org/10.1007/s10862-009-9143-3 | **Bedtime Routines Questionnaire (BRQ)** | Henderson & Jordan, 2010, *J Psychopathol Behav Assess* 32(2):271–280 | **US**; 226 caregivers of children 2–8 yr | 31-item parent-report score of children's bedtime routines (reactive vs. consistent); solid factor structure, adequate internal consistency. |
+| https://doi.org/10.1111/jsr.12059 | **Adolescent Sleep Hygiene Scale – Revised (ASHS-r)** | Storfer-Isser, LeBourgeois, Harsh, Tompsett & Redline, 2013, *J Sleep Res* 22(6) | **US**; urban adolescents 16–19 | Sleep-hygiene score; CFA yielded 6 factors **including a scored "sleep environment" subscale**. Higher = better hygiene; total associated with sleep duration/efficiency and daytime sleepiness. |
+| https://doi.org/10.1177/1359105309346342 | **Sleep Hygiene Practice Scale (SHPS)** | Yang, Lin, Hsu & Cheng, 2010, *J Health Psychol* 15(1):147–155 | Taiwan; adults (good sleepers + insomnia) | 30 items, total 30–180, across 4 domains **including a scored "sleep environment" domain**; higher = more maladaptive; environment domain correlated with PSQI sleep quality. |
+| https://doi.org/10.5664/jcsm.2486 | **Children's Report of Sleep Patterns (CRSP)** | Meltzer, Avis, Biggs, Reynolds, Crabtree & Bevans, 2013, *J Clin Sleep Med* 9(3):235–245 | **US**; children 8–12 (Denver) | Child self-report; the Sleep Hygiene module contains a **scored "environmental" sleep-hygiene subscale**. Reliable/valid; modules usable independently. |
+| https://doi.org/10.1080/15402002.2020.1714625 | **Pediatric Sleep Practices Questionnaire (PSPQ)** | Meltzer, Forrest, de la Motte, Mindell & Bevans, 2021, *Behav Sleep Med* 19(1) | **US**; youth 8–17 (n=307) | 15 items scoring 5 sleep practices **including a scored "sleep environment" (room environment) subscale**; CFA-supported, clinically valid. |
+| https://doi.org/10.1016/j.pedn.2017.02.033 | **Parent Newborn Sleep Safety Survey** | Whiteside-Mansell, Nabaweesi, Caballero, Mullins, Miller & Aitken, 2017, *J Pediatr Nurs* 35:30–35 | **US**; parents of newborns, high-risk families (n=72) | 14 items scoring parent adherence to AAP safe-sleep-**environment** recommendations (position, surface, bedding, location); validated against direct observation. |
+| https://doi.org/10.1007/s10902-020-00302-z | **Household Crowding Index** (persons-per-room / bedroom-standard) — methodological validation | Torshizian & Grimes, 2021, *J Happiness Stud* 22:1925–1951 · also Cable & Sacker, 2019, *SSM–Pop Health* 8:100439 (https://doi.org/10.1016/j.ssmph.2019.100439) | Household-level; NZ and UK | **Computed household index** = persons / rooms (or Bedroom Standard variants). These peer-reviewed studies validate/compare the objective crowding measures — the citable basis for a persons-per-room household sleep-environment index. |
+
+---
+
+## Tab 2 — Family / household-level factors associated with sleep
+
+*Association studies (not scored instruments) that give insight into which family/household factors relate to sleep.*
+
+### Family routines, parenting & sociodemographics
+
+| Paper link | Title | Population | Key relevant finding(s) |
+|---|---|---|---|
+| https://pubmed.ncbi.nlm.nih.gov/36055935/ | Sleep health among U.S. Hispanic/Latinx children: An examination of correlates of meeting sleep duration recommendations — Schmied et al., 2022, *Sleep Health* | **US, Hispanic/Latinx**; 1,165 children | 61.4% met sleep-duration guidelines; a regular/consistent bedtime and living above the poverty threshold significantly raised odds of meeting recommendations. |
+| https://doi.org/10.1016/j.sleh.2021.11.004 | Sleep-related parenting self-efficacy and parent-reported sleep in young children: a dyadic analysis of actor and partner effects — Werner, Mayer & Lohaus, 2022, *Sleep Health* 8(1):54–61 | Germany; 131 mother–father dyads | Actor–partner interdependence model links sleep-related parenting self-efficacy to child sleep problems; family-level dyadic effects. |
+| https://doi.org/10.1097/MOP.0000000000001306 | Assessing sleep behaviors in Latino children and adolescents… — Blanco, Hyde & Martinez, 2024, *Curr Opin Pediatr* 36(1):17–22 | **US, Latino** (review) | Argues cultural/contextual family factors (co-sleeping, bed-sharing) must be accounted for when measuring Latino family sleep. |
+
+### Household crowding & room/bed sharing
+
+| Paper link | Title | Population | Key relevant finding(s) |
+|---|---|---|---|
+| https://pubmed.ncbi.nlm.nih.gov/25386692/ | Sleep and the Housing and Neighborhood Environment… The AHOME Study — Chambers, Pichardo & Rosenbaum, 2016, *Behav Sleep Med* | **US, Latino**; 371 low-income adults, Bronx | Household crowding (persons/room) associated with reduced odds of long sleep; neighborhood/building problems tied to more disturbance. |
+| https://www.sciencedirect.com/science/article/abs/pii/S0277953625008548 | Housing crowding and sleep health in urban China — 2025, *Social Science & Medicine* ⚠️ author byline unconfirmed | China (CFPS 2022) | Crowding associated with abnormal sleep duration, partially mediated by subjective well-being and social status. |
+| https://doi.org/10.1111/cdev.13146 | Parent–Infant Room Sharing During the First Months of Life — Beijers, Cassidy, Lustermans & de Weerth, 2019, *Child Development* 90(4):1350–1367 | Netherlands; 193 dyads | More weeks of room sharing linked to higher maternal-rated sleep quality and prosocial behavior; no adverse effects. |
+
+### Housing type / quality & neighborhood physical environment
+
+| Paper link | Title | Population | Key relevant finding(s) |
+|---|---|---|---|
+| https://pubmed.ncbi.nlm.nih.gov/29561769/ | Black–White Differences in Housing Type and Sleep Duration/Difficulties — Johnson et al., 2018, *Int J Environ Res Public Health* 15(4):564 | **US**; 226,208 adults (NHIS) | Housing type (mobile home/trailer vs house/apartment) linked to worse sleep; a driver of Black–White sleep disparities. |
+| https://doi.org/10.1007/s11524-019-00418-5 | Broken Windows, Broken Zzs: Poor Housing and Neighborhood Conditions… — Troxel et al., 2020, *J Urban Health* | **US**; low-income adults, Pittsburgh | Adverse housing conditions independently associated with shorter actigraphic total sleep time. |
+| https://pmc.ncbi.nlm.nih.gov/articles/PMC8844874/ | Exterior Housing Conditions Are Associated With Objective Measures of Poor Sleep — Okoye, Perrin, Szanton & Spira, 2021, *Sleep Health* | **US**; 136 older adults | ≥1 outside-home disrepair condition ≈ 36 min shorter TST, more WASO, lower sleep efficiency. |
+| https://doi.org/10.1093/aje/kwad016 | Neighborhood Built Environment and Sleep Health: A Longitudinal Study… — Kim et al., 2023, *Am J Epidemiol* 192(5):736–747 | **US**; 1,051 residents (PHRESH Zzz) | Longitudinal neighborhood physical/built environment linked to objective sleep outcomes. |
+| https://pubmed.ncbi.nlm.nih.gov/23161266/ | Association Between Housing Quality and Sleep Quality Among Latino Farmworkers — Sandberg et al., 2014, *J Immigr Minor Health* | **US, Latino**; 371 farmworkers, NC | Access to air conditioning positively and independently associated with good sleep quality. |
+
+---
+
+## Tab 3 — Community Sleep Interventions
 
 | Paper link | Title | Population / modality | Key relevant finding(s) |
 |---|---|---|---|
-| https://doi.org/10.1177/00099228231207307 · https://pubmed.ncbi.nlm.nih.gov/37905528/ | Pilot RCT of the **SIESTA** sleep-hygiene intervention — Koinis-Mitchell et al., 2024, *Clinical Pediatrics* | **US + Latino**; urban Latino middle-schoolers (Providence RI & San Juan PR); school-based, bilingual | Actigraphy sleep duration rose 13.3% (~45 min) in SIESTA vs 7.2% (~25 min) in controls; child- and caregiver-reported sleep disturbances significantly decreased through 4-month follow-up. |
-| https://doi.org/10.5664/jcsm.8510 | Tailored Approach to Sleep Health Education (**TASHE**): RCT of a web-based app — Jean-Louis et al., 2020, *J Clin Sleep Med* | **US, Black**; 194 adults at high OSA risk; community-engaged (barbershops, salons, places of worship) | TASHE group showed increased sleep hygiene over 6 months vs control; no significant change in OSA beliefs or knowledge. |
-| https://doi.org/10.1111/jsr.14213 · https://pubmed.ncbi.nlm.nih.gov/38773705/ | Effectiveness of peer-delivered sleep health education and social support in increasing OSA evaluation among at-risk Blacks — Jean-Louis et al., 2025, *J Sleep Res* 34(1):e14213 | **US, Black**; 319 adults at OSA risk; peer/community-delivered | Peer-based social support and psychosocial factors favorably related to OSA evaluation/adherence behavior vs standard information. |
-| https://www.sciencedirect.com/science/article/abs/pii/S2352721816000188 | Efficacy of sleep education through training of community health promoters — 2016, *Sleep Health* | Dominican Republic (⚠️ Latino, non-US); promotora train-the-trainer | Promoters' sleep-disorder knowledge improved after a 4-hr training, but community members' knowledge did not significantly change. ⚠️ Author list not confirmed from search snippets — verify before citing. |
-| https://www.sciencedirect.com/science/article/abs/pii/S1744388119305377 · https://pmc.ncbi.nlm.nih.gov/articles/PMC7210318/ | Sleep hygiene and yoga intervention in affordable-housing communities: pilot results — Spadola et al., 2020, *Complement Ther Clin Pract* 39:101121 | **US**; low-income, racially/ethnically diverse adults (~19% Hispanic/Latino); community-based | Significant pre/post improvements: sleep duration 5.4→6.9 h/night (p<0.01), sleep-related impairment, sleep disturbance, and sleep-hygiene behaviors. |
-| https://www.sciencedirect.com/science/article/pii/S1389945726002583 | **Nuestro Sueño**: protocol for a couples-based intervention to improve PAP adherence and sleep among Hispanic patients — 2026, *Sleep Medicine* (protocol) | **US + Latino**; Hispanic couples; CHW-delivered telehealth | ⚠️ Protocol only — no outcomes yet. Pilot RCT testing a culturally adapted, community-health-worker-delivered couples intervention vs information control. Author list not confirmed from snippets. |
+| https://doi.org/10.1177/00099228231207307 | SIESTA sleep-hygiene intervention pilot RCT — Koinis-Mitchell et al., 2024, *Clin Pediatr* 63(8):1062–1077 | **US + Latino**; Latino middle-schoolers; school-based | Actigraphy sleep duration +13.3% (~45 min) vs +7.2% controls; sleep disturbances significantly decreased through 4-month follow-up. |
+| https://doi.org/10.5664/jcsm.8510 | TASHE web-based sleep education RCT — Jean-Louis et al., 2020, *J Clin Sleep Med* 16(8):1331–1341 | **US, Black**; 194 adults; community-engaged | Increased sleep hygiene over 6 months vs control; no change in OSA beliefs/knowledge. |
+| https://doi.org/10.1111/jsr.14213 | Peer-delivered sleep education & social support for OSA evaluation — Jean-Louis et al., 2025, *J Sleep Res* 34(1):e14213 | **US, Black**; 319 adults | Peer social support favorably related to OSA evaluation/adherence vs standard information. |
+| https://www.sciencedirect.com/science/article/abs/pii/S2352721816000188 | Sleep education via training community health promoters — 2016, *Sleep Health* ⚠️ authors unconfirmed | Dominican Republic (Latino, non-US) | Promoters' knowledge improved after training; community members' knowledge did not significantly change. |
+| https://doi.org/10.1016/j.ctcp.2020.101121 | Sleep hygiene + yoga in affordable housing communities — Spadola et al., 2020, *Complement Ther Clin Pract* 39:101121 | **US**; low-income, diverse (~19% Latino) | Sleep duration 5.4→6.9 h/night (p<0.01); improved impairment, disturbance, hygiene. |
+| https://www.sciencedirect.com/science/article/pii/S1389945726002583 | Nuestro Sueño protocol — 2026, *Sleep Medicine* ⚠️ protocol only; authors unconfirmed | **US + Latino**; Hispanic couples; CHW-delivered | Protocol only, no outcomes yet — culturally adapted CHW-delivered couples intervention for PAP adherence & sleep. |
 
 ---
 
-## 3. Family Cohesion Measures
+## Tab 4 — Family Cohesion Measures
 
 | Paper link | Title | Population | Key relevant finding(s) |
 |---|---|---|---|
-| https://doi.org/10.1111/j.1752-0606.2009.00175.x | FACES IV and the Circumplex Model: Validation Study — Olson, 2011, *J Marital Fam Ther* 37(1):64–80 | **US** adults | Core validation of FACES IV; six scales span the cohesion continuum (balanced, disengaged, enmeshed) and flexibility, with strong concurrent, construct, and discriminant validity. |
-| https://pubmed.ncbi.nlm.nih.gov/31853517/ (DOI: 10.1037/lat0000126) | Measurement properties of Sabogal's Familism Scale (HCHS/SOL) — Campos et al., 2019, *J Latinx Psychol* 7(4):257–272 | **US Hispanic/Latino**; N=5,313 | Sabogal's 3-factor model (obligations, support, family as referents) fit well and was invariant across English/Spanish; good convergent/discriminant validity. |
-| https://doi.org/10.1177/0739986303256912 | A new familism scale for use with Latino populations — Lugo Steidel & Contreras, 2003, *Hisp J Behav Sci* 25(3):312–330 | **US Latino** adults; N=124 | 18-item scale, 4 factors (Support, Interconnectedness, Honor, Subjugation of Self), explaining 51% of variance; overall α = .83. |
-| https://doi.org/10.1177/0272431609338178 · https://pubmed.ncbi.nlm.nih.gov/20644653/ | Mexican American Cultural Values Scale (MACVS) — Knight et al., 2010, *J Early Adolesc* 30(3):444–481 | **US Mexican American** adolescents & parents | 50-item, 9-subscale measure with three Familism subscales (Support, Referent, Obligation); supported higher-order structure, reliability, and construct validity. English/Spanish. |
-| https://doi.org/10.1177/0739986305281125 | Factorial invariance of a pan-Hispanic familism scale — Villarreal, Blozis & Widaman, 2005, *Hisp J Behav Sci* 27(4):409–425 | **US Hispanic** (nationally representative) | Attitudinal familism measure showed factorial invariance across country of origin (US/Mexico/Latin America) and language (English/Spanish). |
-| https://doi.org/10.1177/1073191111425856 · https://pubmed.ncbi.nlm.nih.gov/22084400/ | The Brief Family Relationship Scale — Fok, Allen, Henry & People Awakening Team, 2014, *Assessment* 21(1):67–72 | **US** (Alaska Native youth; ⚠️ not Latino) | Brief 16-item measure of the FES Relationship dimension (cohesion, expressiveness, conflict); validated as a family-functioning measure. |
-
-*(A FACES IV validation in Spanish adolescents, https://doi.org/10.1186/s41155-022-00222-2, 2022, also surfaced but is Spain-based (non-US Latino) — noted for completeness only.)*
+| https://doi.org/10.1111/j.1752-0606.2009.00175.x | FACES IV and the Circumplex Model: Validation Study — Olson, 2011, *J Marital Fam Ther* 37(1):64–80 | **US** adults | Core validation of FACES IV; six scales span cohesion and flexibility, strong validity. |
+| https://pubmed.ncbi.nlm.nih.gov/31853517/ | Measurement Properties of Sabogal's Familism Scale (HCHS/SOL) — Campos et al., 2019, *J Latinx Psychol* 7(4):257–272 | **US Hispanic/Latino**; N=5,313 | 3-factor familism model fit well, invariant across English/Spanish; good validity. |
+| https://doi.org/10.1177/0739986303256912 | A New Familism Scale for Use with Latino Populations — Lugo Steidel & Contreras, 2003, *Hisp J Behav Sci* 25(3):312–330 | **US Latino** adults; N=124 | 18-item scale, 4 factors; overall α = .83. |
+| https://doi.org/10.1177/0272431609338178 | Mexican American Cultural Values Scale (MACVS) — Knight et al., 2010, *J Early Adolesc* 30(3):444–481 | **US Mexican American** | 50-item, 9 subscales incl. 3 Familism subscales; supported structure, reliability, validity. |
+| https://doi.org/10.1177/0739986305281125 | Factorial invariance of a pan-Hispanic familism scale — Villarreal, Blozis & Widaman, 2005, *Hisp J Behav Sci* 27(4):409–425 | **US Hispanic** | Familism measure invariant across country of origin and language. |
+| https://doi.org/10.1177/1073191111425856 | The Brief Family Relationship Scale — Fok, Allen, Henry & People Awakening Team, 2014, *Assessment* 21(1):67–72 | **US** (Alaska Native youth) | Brief 16-item FES Relationship dimension (cohesion, expressiveness, conflict). |
 
 ---
 
-## 4. Prior ICC Findings in Sleep Research
+## Tab 5 — Prior ICC Findings in Sleep Research
 
 | Paper link | Title | Population | Key relevant finding(s) — ICC value & type |
 |---|---|---|---|
-| https://pubmed.ncbi.nlm.nih.gov/25845697/ · https://academic.oup.com/sleep/article-abstract/38/9/1497/2418017 | Reproducibility of a standardized actigraphy scoring algorithm for sleep in a US Hispanic/Latino population — Patel et al., 2015, *Sleep* 38(9):1497–1503 | **US Hispanic/Latino** (HCHS/SOL Sueño); 50 adults | **Reliability:** intra- and inter-scorer ICCs **0.911–0.995** across all 11 actigraphy-derived sleep variables. Most directly relevant to US/Latino work. |
-| https://pubmed.ncbi.nlm.nih.gov/20191932/ · https://pmc.ncbi.nlm.nih.gov/articles/PMC2823270/ | A twin study of sleep duration and body mass index — Watson et al., 2010, *J Clin Sleep Med* 6(1):11–17 | **US** adult twins | **Family/genetic clustering:** sleep-duration ICC ~2× larger in MZ than DZ twins → heritability **0.31** (p=0.08); BMI heritability 0.76. |
-| https://doi.org/10.1007/s11325-025-03326-y · https://pmc.ncbi.nlm.nih.gov/articles/PMC12000170/ | Moderately strong ICCs between actigraphic and PSG total sleep time and sleep efficiency in older adults — 2025, *Sleep and Breathing* | 12 older adults with sleep disturbance | **Method agreement:** TST **ICC 0.79**; sleep efficiency **0.85**; awakenings **0.45**; TIB/WASO/SOL non-significant (0.30–0.33). |
-| https://pubmed.ncbi.nlm.nih.gov/39833037/ · https://journals.lww.com/md-journal/fulltext/2025/01170/test_retest_reliability_of_the_arabic_version_of.10.aspx | Test-retest reliability of the Arabic version of the PSQI — Alqarni et al., 2025, *Medicine (Baltimore)* | Saudi Arabia (⚠️ non-US); 202 students/interns | **Questionnaire test-retest:** overall PSQI **ICC 0.694**; sleep efficiency 0.460; sleep latency 0.730. |
-| https://doi.org/10.1038/s41598-025-07786-w · https://pubmed.ncbi.nlm.nih.gov/40664721/ | Agreement between parental reports and accelerometer measures of sleep duration in primary-school children — Duarte, Martins & Rosário, 2025, *Scientific Reports* | Portugal (⚠️ non-US); 735 children | **Proxy-report agreement:** weekday **ICC 0.189**, weekend **0.139** — poor parent-vs-accelerometer agreement. |
-
-**Design-assumption benchmark (not an empirically estimated ICC):** Inhulsen, Busch & van Stralen (2022), "Effect Evaluation of a School-Based Intervention Promoting Sleep in Adolescents," *J School Health* (https://pubmed.ncbi.nlm.nih.gov/35315076/), used an **assumed school-level ICC of 0.10** for sleep duration in its cluster-RCT power calculation — a benchmark for school/community-clustered sleep designs, but an assumed rather than estimated value.
+| https://pubmed.ncbi.nlm.nih.gov/25845697/ | Reproducibility of a Standardized Actigraphy Scoring Algorithm… — Patel et al., 2015, *Sleep* 38(9):1497–1503 | **US Hispanic/Latino** (HCHS/SOL Sueño) | Reliability: intra-/inter-scorer ICCs **0.911–0.995** across 11 sleep variables. |
+| https://pubmed.ncbi.nlm.nih.gov/20191932/ | A Twin Study of Sleep Duration and Body Mass Index — Watson et al., 2010, *J Clin Sleep Med* 6(1):11–17 | **US** adult twins | Family/genetic clustering: sleep-duration heritability **0.31** (ICC ~2× larger in MZ vs DZ). |
+| https://doi.org/10.1007/s11325-025-03326-y | Moderately strong ICCs between actigraphic and PSG TST and sleep efficiency… — 2025, *Sleep and Breathing* 29(2):161 | Older adults; n=12 | Method agreement: TST **0.79**, sleep efficiency **0.85**, awakenings 0.45. |
+| https://pubmed.ncbi.nlm.nih.gov/39833037/ | Test-retest reliability of the Arabic PSQI — Alqarni et al., 2025, *Medicine (Baltimore)* 104(3):e41269 | Saudi Arabia; 202 | Test-retest: overall PSQI **0.694**; sleep efficiency 0.460; sleep latency 0.730. |
+| https://doi.org/10.1038/s41598-025-07786-w | Agreement between parental reports and accelerometer sleep duration — Duarte, Martins & Rosário, 2025, *Sci Rep* | Portugal; 735 children | Proxy-report agreement: weekday **0.189**, weekend **0.139** (poor). |
+| https://doi.org/10.1111/josh.13175 | Effect Evaluation of a School-Based Sleep Intervention (cluster-RCT) — Inhulsen, Busch & van Stralen, 2022, *J School Health* | Netherlands; 972 students, 10 schools | **Design assumption** (not estimated): assumed school-level ICC of **0.10** for sleep duration in power calculation. |
 
 ---
 
-## Notes on verification & gaps
+## Notes on verification, caveats & gaps
 
-- **Verification method:** direct page-fetching was proxy-blocked (HTTP 403); titles, authors, journals, years, and ICC numbers were confirmed against web-search result text from the source pages. Open each link to confirm exact page numbers and in-context values before citing.
-- **Deliberately excluded** to avoid fabrication: a separate "FISH reliability" paper that could not be verified to a distinct citation; couples/twin sleep papers reporting "concordance"/APIM rather than a verifiable ICC number.
-- **Flagged uncertainties:** the Dominican Republic promotora paper (2.4) and the Nuestro Sueño protocol (2.6) — author lists not confirmed from snippets; Nuestro Sueño has no outcome data yet (protocol).
-- **Literature gaps:** (a) no widely validated standalone "family sleep health scale" beyond the FISH; (b) no completed, peer-reviewed promotora-delivered sleep intervention in US Latino adults with reported sleep outcomes yet — the niche is still at protocol/pilot stage; (c) empirically estimated household- or clinic-level clustering ICCs for sleep are scarce — the twin heritability (0.31) and the assumed school-level ICC (0.10) are the closest anchors for multilevel design planning.
+- **Tab 1 vs Tab 2:** Tab 1 lists only validated, scored instruments that yield a household/family/environment sleep score (most useful for building a family/household "score"). Tab 2 collects family/household-level factors *associated* with sleep (association studies, not scored instruments).
+- **Verification:** all links checked to resolve to the stated article; titles/authors/journals/years match. Page-fetching was proxy-blocked, so confirmation rests on search-result text. Confirm details at each link before citing.
+- **Caveats (not errors):**
+  - Tab 1, PSPQ (Meltzer 2021): author order from search/Tandfonline record (full text proxy-blocked); title/journal/volume/year/DOI confirmed.
+  - Tab 1, Household Crowding Index: index (persons/room) is a long-standing construct; the two cited papers are peer-reviewed validation/comparison studies used as the methodological basis.
+  - Tab 2 China 2025, Tab 3 Dominican Republic 2016 & Nuestro Sueño 2026: articles exist with confirmed titles, but author bylines unconfirmed from snippets — verify on publisher page.
+  - Nuestro Sueño (Tab 3) is a protocol — no outcomes yet.
+  - ICC Tab, Inhulsen 2022 reports an *assumed* school-level ICC (0.10), not an estimated value.
+- **Excluded from Tab 1** (do not meet "scored household/family/environment" criterion): Sleep Hygiene Index (Mastin 2006, no distinct environmental subscale); RU-SATED/composite sleep-health scores (individual-level); Children's Sleep Hygiene Scale (primary citation is a conference abstract; content captured by CRSP).
+- **Literature gaps:** no completed peer-reviewed promotora-delivered sleep intervention in US Latino adults with reported sleep outcomes yet; empirically estimated household-/clinic-level clustering ICCs for sleep are scarce (twin heritability 0.31 and assumed school-level ICC 0.10 are the closest anchors for multilevel design planning).
