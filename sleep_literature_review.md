@@ -27,6 +27,46 @@
 
 ---
 
+## Tab 1 Summary — instruments by population (for a family/household proposal)
+
+*Ten validated instruments that produce a numeric score/index, grouped by who reports and who the score is about.*
+
+**Adults — self-report**
+- **ASE** (Grandner 2022): scores the respondent's own bedroom/home sleep **environment** (light, temp, noise, safety, comfort, humidity, smell). Best single environment instrument; apply per household adult.
+- **SHPS** (Yang 2010): adult sleep-hygiene **practices**, including a sleep-environment domain (also schedule, arousal, eating/drinking).
+
+**Adolescents — self-report**
+- **ASHS-r** (Storfer-Isser 2013): adolescent (~16–19) sleep-hygiene score with a scored **sleep-environment subscale**.
+
+**School-age children / youth — child self-report**
+- **CRSP** (Meltzer 2013): children 8–12; Sleep Hygiene module has a scored **environmental** subscale — the child rates their own environment.
+- **PSPQ** (Meltzer 2021): youth 8–17; scores 5 sleep practices incl. a **room-environment** subscale (plus timing, routines, technology, parental presence).
+
+**Children — caregiver/parent-report**
+- **FISH** (Malow 2009): the **only true family-unit score** — parent-reported family sleep hygiene covering routines, environment, **and parental bedtime behaviors** (children ~4–10). Natural anchor for a family-level design.
+- **CASES** (Peltz 2022): caregiver-report score of the child's sleep **environment** (hazards, bedding, electronics), children 5–18.
+- **BRQ** (Henderson & Jordan 2010): caregiver-report score of children's **bedtime routines** (children 2–8).
+
+**Infants / newborns — caregiver-report**
+- **Parent Newborn Sleep Safety Survey** (Whiteside-Mansell 2017): scores caregiver adherence to safe-sleep-**environment** recommendations (position, surface, bedding, location); validated vs. direct observation.
+
+**Whole household — objective / computed (no self-report)**
+- **Household Crowding Index** (Torshizian & Grimes 2021; Cable & Sacker 2019): computed persons-per-room index — an objective structural covariate, ideal for adjustment/multilevel models.
+
+**Practical guidance for a family/household intervention or data collection**
+- **Anchor on FISH** for a genuine family-level score (only instrument scoring the family unit, incl. parental bedtime behaviors).
+- **Go multi-informant:** pair a caregiver-report (FISH/CASES/BRQ) with a child/adolescent self-report (CRSP/PSPQ/ASHS-r) so both rate the same home.
+- **Add ASE** per adult for the physical bedroom environment (most focused, well-validated environment score).
+- **Include the Household Crowding Index** as an objective, low-burden covariate for confounding adjustment and household-clustered models.
+- **Cover the lifespan:** infant (Newborn Safety Survey) → toddler/preschool (BRQ 2–8, FISH 4–10) → school-age (CRSP 8–12, CASES 5–18, PSPQ 8–17) → adolescent (ASHS-r ~16–19) → adult (ASE, SHPS).
+- **Match to target:** environment-focused intervention → ASE + CASES (+ Crowding Index); routines/behavior-focused → FISH + BRQ (+ PSPQ/CRSP for the child's view).
+
+**Caveats / gaps**
+- Most environment instruments were validated in US samples; SHPS is Taiwanese. Confirm cross-cultural/Spanish-language validity for Latino samples (a documented gap — see Blanco 2024, Tab 2).
+- Only FISH scores the family as a unit; a single validated whole-family household sleep score does not yet exist — a family-level composite would likely combine several of these.
+
+---
+
 ## Tab 2 — Family / household-level factors associated with sleep
 
 *Association studies (not scored instruments) that give insight into which family/household factors relate to sleep.*
