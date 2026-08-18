@@ -1,4 +1,4 @@
-# Split-Screen Duel · Quickdraw 🔫
+# Split-Screen Duel · Quickdraw
 
 **▶ [Play now](https://renrenmimi.github.io/1v1/)** — runs in your browser, nothing to install.
 
