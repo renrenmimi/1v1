@@ -18,4 +18,4 @@ Built for phones and tablets too — pass it back and forth.
 
 ## Tech
 
-Single-file HTML5 app, local two-player. No build step, no dependencies.
+One `index.html` file. Two players share one keyboard.
