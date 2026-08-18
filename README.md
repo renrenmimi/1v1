@@ -5,6 +5,8 @@
 Two players, one screen, one keyboard. Split the display down the middle and see who reacts first.
 Built for phones and tablets too — pass it back and forth.
 
+![Split-screen quickdraw for two players](docs/screenshot.jpg)
+
 ## Settings
 
 - **Player names** for both sides
