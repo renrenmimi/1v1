@@ -14,7 +14,7 @@ Built for phones and tablets too — pass it back and forth.
 - **Swap sides** — flip A and B for left/right-handed players
 - **Volume** and **vibration** toggles
 
-> The in-game UI is bilingual (English / 中文).
+> The in-game UI is bilingual (English and Chinese).
 
 ## Tech
 
